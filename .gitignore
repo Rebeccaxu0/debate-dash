@@ -5,6 +5,11 @@
 /.pnp
 .pnp.js
 
+# Ignore Firebase cache and log files
+.firebase/
+firebase-debug.log
+.runtimeconfig.json
+
 # testing
 /coverage
 
