@@ -1,0 +1,32 @@
+.debate-container {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    padding: 10px;
+  }
+  
+  .debate-card {
+    width: 60%;
+    padding: 15px;
+    margin-bottom: 10px;
+  }
+  
+  .left-card {
+    margin-right: auto;
+    background-color: #f8f9fa;
+    border-radius: 10px;
+  }
+  
+  .right-card {
+    margin-left: auto;
+    background-color: #e9ecef;
+    border-radius: 10px;
+  }
+  
+  /* Optional: Add media queries for responsiveness */
+  @media (max-width: 768px) {
+    .debate-card {
+      width: 80%;
+    }
+  }
+  
