@@ -1,11 +1,11 @@
 import React from "react";
 import { Form } from "react-bootstrap";
 
-const CandidateSelector = ({ candidate, handleCandidateChange, label, includeSelf }) => {
+const CandidateSelector = ({ candidate, handleCandidateChange, label, includeSelf, disabled }) => {
   return (
     <Form.Group className="mb-4">
       <Form.Label>{label}</Form.Label>
-      <Form.Control as="select" value={candidate} onChange={handleCandidateChange}>
+      <Form.Control as="select" value={candidate} onChange={handleCandidateChange} disabled={disabled}>
         <option value="">Pick a Candidate</option>
         {includeSelf && <option value="Yourself">Yourself</option>}
         <option value="Donald Trump">Donald Trump</option>

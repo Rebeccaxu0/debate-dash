@@ -1,8 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import CandidateSelector from '../components/CandidateSelector';
 import DebateTopicInput from '../components/DebateTopicInput';
 import SimulateButton from '../components/SimulateButton';
-import { Container, Card, Button, Form } from "react-bootstrap";
+import { Container, Card, Button, Form, Row, Col } from "react-bootstrap";
 import { getCandidateResponse } from '../utilities/openaiApi';
 import './Home.css';
 
@@ -16,9 +16,26 @@ function Home() {
   const [userResponse, setUserResponse] = useState("");
   const [isUserDebating, setIsUserDebating] = useState(false);
   const [isDebateOver, setIsDebateOver] = useState(false);
+  const [isSimulated, setIsSimulated] = useState(false);
+
+  // Track the end of the debate messages
+  const messagesEndRef = useRef(null);
+
+  // Scroll automatically if the user is debating
+  useEffect(() => {
+    if (isUserDebating && messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [debateMessages, isUserDebating]);
+
+  // Add a condition to enable/disable the button
+  const isSimulateDisabled = !candidate1 || !candidate2 || !topic || isSimulated;
 
 
   const simulateDebate = async () => {
+    // Disable the fields after simulation starts
+    setIsSimulated(true);
+
     // First statement from Candidate 1
     const initialStatement1 = { role: "system", content: `You are ${candidate1}. Imitate everything from personality to speech style. You are debating with ${candidate2}.` };
     const userPrompt1 = { role: "user", content: `Please give your opening statement on "${topic}".` };
@@ -87,7 +104,7 @@ function Home() {
   };
 
   const triggerNextCycle = (c1History, c2History, cCount) => {
-    if (cCount < 3) {
+    if (cCount < 2) {
       setTimeout(() => {
         continueDebate(c1History, c2History, cCount);
       }, 1000);
@@ -127,10 +144,33 @@ function Home() {
   return (
     <Container className="App">
       <h1>Debate Dash</h1>
-      <CandidateSelector label="Select Candidate 1:" candidate={candidate1} handleCandidateChange={(e) => setCandidate1(e.target.value)} />
-      <CandidateSelector label="Select Candidate 2:" candidate={candidate2} handleCandidateChange={(e) => setCandidate2(e.target.value)} includeSelf={true} />
-      <DebateTopicInput topic={topic} handleTopicChange={(e) => setTopic(e.target.value)} />
-      <SimulateButton onClick={simulateDebate} />
+      <Row>
+        <Col md={6}>
+          <CandidateSelector
+            label="Select Candidate 1:"
+            candidate={candidate1}
+            handleCandidateChange={(e) => setCandidate1(e.target.value)}
+            disabled={isSimulated}
+          />
+        </Col>
+        <Col md={6}>
+          <CandidateSelector
+            label="Select Candidate 2:"
+            candidate={candidate2}
+            handleCandidateChange={(e) => setCandidate2(e.target.value)} includeSelf={true}
+            disabled={isSimulated}
+          />
+        </Col>
+      </Row>
+      <DebateTopicInput
+        topic={topic}
+        handleTopicChange={(e) => setTopic(e.target.value)}
+        disabled={isSimulated}
+      />
+      <SimulateButton
+        onClick={simulateDebate}
+        disabled={isSimulateDisabled}
+      />
 
       {debateMessages.map((msg, idx) => (
         <Card className={msg.speaker === candidate1 ? "debate-card left-card mt-3" : "debate-card right-card mt-3"} key={idx}>
@@ -140,6 +180,9 @@ function Home() {
           </Card.Body>
         </Card>
       ))}
+
+      {/* Auto scroll when new messages are added only when the user is debating */}
+      <div ref={messagesEndRef} />
 
       {isUserDebating && (
         <Card className="debate-card right-card mt-3">
