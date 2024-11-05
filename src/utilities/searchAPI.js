@@ -13,14 +13,13 @@ export const getCandidateStance = async (query) => {
             },
         }
     );
-    console.log(response);
-
 
     const targetUrl = response.data.items[0].link;
-    console.log(targetUrl);
     const proxyUrl = "http://localhost:8080/";
+
     const res = await fetch(proxyUrl+targetUrl);
     const html = await res.text();
+
     const text = convert(html, {
         selectors: [ 
             { selector: 'a', options: { ignoreHref: true } },
@@ -29,7 +28,6 @@ export const getCandidateStance = async (query) => {
             { selector: 'header', format: 'skip' },
         ],
     });
-    console.log(text);
 
     return text;
 };
