@@ -7,9 +7,10 @@ const openai = new OpenAI({
 
 // Get the response from the OpenAI API
 export const getCandidateResponse = async (conversationHistory) => {
+  console.log(conversationHistory);
   const response = await openai.chat.completions.create({
     model: "gpt-3.5-turbo",
-    max_tokens: 100,
+    max_tokens: 200,
     messages: conversationHistory,
   });
 
