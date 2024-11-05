@@ -4,6 +4,7 @@ import DebateTopicInput from './DebateTopicInput';
 import SimulateButton from './SimulateButton';
 import { Container, Card, Button, Form, Row, Col } from "react-bootstrap";
 import { getCandidateResponse } from '../utilities/openaiApi';
+import { getCandidateStance } from '../utilities/searchAPI';
 import './DebateComponent.css';
 
 function DebateComponent({ onSaveDebate }) {
@@ -38,7 +39,9 @@ function DebateComponent({ onSaveDebate }) {
 
     // First statement from Candidate 1
     const initialStatement1 = { role: "system", content: `You are ${candidate1}. Imitate everything from personality to speech style. You are debating with ${candidate2}.` };
-    const userPrompt1 = { role: "user", content: `Please give your opening statement on "${topic}".` };
+    const candidateArticle1 = await getCandidateStance(`${candidate1} policies on ${topic}`);
+    // const ragModelInput = {role: ""}`Using the following information: ${candidateArticle}`;
+    const userPrompt1 = { role: "user", content: `Using the following information: ${candidateArticle1}. Please give your opening statement on "${topic}". Please limit to one paragraph.` };
 
     let c1History = [...c1ConversationHistory, initialStatement1, userPrompt1];
     const candidate1Response = await getCandidateResponse(c1History);
@@ -58,7 +61,8 @@ function DebateComponent({ onSaveDebate }) {
     } else {
       // First statement from Candidate 2
       const initialStatement2 = { role: "system", content: `You are ${candidate2}. Imitate everything from personality to speech style. You are debating with ${candidate1}.` };
-      const userPrompt2 = { role: "user", content: ` ${candidate1} responded first, with this: "${candidate1Response}". Please give your opening statement on "${topic}" and respond.` };
+      const candidateArticle2 = await getCandidateStance(`${candidate2} policies on ${topic}`);
+      const userPrompt2 = { role: "user", content: ` ${candidate1} responded first, with this: "${candidate1Response}". Using the following information: ${candidateArticle2}. Please give your opening statement on "${topic}" and respond. Please limit to one paragraph.` };
 
       let c2History = [...c2ConversationHistory, initialStatement2, userPrompt2];
       const candidate2Response = await getCandidateResponse(c2History);
@@ -77,7 +81,7 @@ function DebateComponent({ onSaveDebate }) {
     // Candidate 1 responds to candidate 2
     const prevCandidate2Response = c2History[c2History.length - 1].content;
 
-    const userPrompt1 = { role: "user", content: ` ${candidate2} responded with this: "${prevCandidate2Response}". Please respond for the debate.` };
+    const userPrompt1 = { role: "user", content: ` ${candidate2} responded with this: "${prevCandidate2Response}". Please respond for the debate. Please limit to one paragraph.` };
     c1History.push(userPrompt1);
 
     const candidate1Response = await getCandidateResponse(c1History);
@@ -89,7 +93,7 @@ function DebateComponent({ onSaveDebate }) {
 
 
     // Candidate 2 responds to candidate 1
-    const userPrompt2 = { role: "user", content: ` ${candidate1} responded with this: "${candidate1Response}". Please respond for the debate.` };
+    const userPrompt2 = { role: "user", content: ` ${candidate1} responded with this: "${candidate1Response}". Please respond for the debate. Please limit to one paragraph.` };
 
     c2History.push(userPrompt2);
     const candidate2Response = await getCandidateResponse(c2History);
@@ -104,7 +108,7 @@ function DebateComponent({ onSaveDebate }) {
   };
 
   const triggerNextCycle = (c1History, c2History, cCount) => {
-    if (cCount < 2) {
+    if (cCount < 1) {
       setTimeout(() => {
         continueDebate(c1History, c2History, cCount);
       }, 1000);
