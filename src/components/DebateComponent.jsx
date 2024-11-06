@@ -16,6 +16,7 @@ function DebateComponent({ onSaveDebate }) {
   const [debateMessages, setDebateMessages] = useState([]);
   const [userResponse, setUserResponse] = useState("");
   const [isUserDebating, setIsUserDebating] = useState(false);
+  const [isUserDebatingClosing, setIsUserDebatingClosing] = useState(false);
   const [isDebateOver, setIsDebateOver] = useState(false);
   const [isSimulated, setIsSimulated] = useState(false);
 
@@ -72,8 +73,37 @@ function DebateComponent({ onSaveDebate }) {
 
       setDebateMessages(prev => [...prev, { speaker: candidate2, message: candidate2Response }]);
 
-      continueDebate(c1History, c2History, 0);
+      await continueDebate(c1History, c2History, 0);
+
+      closingStatements(c1History, c2History);
     }
+  };
+
+
+  const closingStatements = async(c1History, c2History) => {
+    const prevCandidate2Response = c2History[c2History.length - 1].content;
+
+    const userPrompt1 = { role: "user", content: ` ${candidate2} responded with this: "${prevCandidate2Response}". Please make a closing statement ${topic}. Please limit to one paragraph.` };
+    c1History.push(userPrompt1);
+
+    const candidate1Response = await getCandidateResponse(c1History);
+
+    c1History.push({ role: "system", content: candidate1Response });
+    setC1ConversationHistory(c1History);
+
+    setDebateMessages(prev => [...prev, { speaker: candidate1, message: candidate1Response }]);
+
+    const userPrompt2 = { role: "user", content: ` ${candidate1} responded with this: "${candidate1Response}". Please make a closing statement on ${topic}. Please limit to one paragraph.` };
+
+    c2History.push(userPrompt2);
+    const candidate2Response = await getCandidateResponse(c2History);
+
+    c2History.push({ role: "system", content: candidate2Response });
+    setC2ConversationHistory(c2History);  // Update state
+
+    setDebateMessages(prev => [...prev, { speaker: candidate2, message: candidate2Response }]);
+
+    setIsDebateOver(true);
   };
 
 
@@ -112,8 +142,6 @@ function DebateComponent({ onSaveDebate }) {
       setTimeout(() => {
         continueDebate(c1History, c2History, cCount);
       }, 1000);
-    } else {
-      setIsDebateOver(true);
     }
   };
 
@@ -139,11 +167,33 @@ function DebateComponent({ onSaveDebate }) {
   };
 
 
-  const handleDone = () => {
+  const handleClosingStatement = async () => {
+    const userInput = { role: "user", content: userResponse };
+    const c1History = [...c1ConversationHistory, userInput];
+    setDebateMessages(prev => [...prev, { speaker: "You", message: userResponse }]);
+
     setIsUserDebating(false);
-    setIsDebateOver(true);
-    setDebateMessages(prev => [...prev, { speaker: "You", message: "I am done debating." }]);
+
+    const userPrompt1 = { role: "user", content: `Please make a closing statement ${topic}. Please limit to one paragraph.` };
+    c1History.push(userPrompt1);
+
+    const candidate1Response = await getCandidateResponse(c1History);
+    c1History.push({ role: "system", content: candidate1Response });
+
+    setC1ConversationHistory(c1History);
+    setDebateMessages(prev => [...prev, { speaker: candidate1, message: candidate1Response }]);
+    setUserResponse("");
+
+    setTimeout(() => {
+      setIsUserDebatingClosing(true);  // Set to true to allow user to respond
+    }, 1000);
   };
+
+  const handleDone = () => {
+    setDebateMessages(prev => [...prev, { speaker: "You", message: userResponse }]);
+    setIsUserDebatingClosing(false);
+    setIsDebateOver(true);
+  }
 
   const handleSave = () => {
     const debateData = {
@@ -213,12 +263,32 @@ function DebateComponent({ onSaveDebate }) {
               <Button variant="primary" onClick={handleUserSubmit}>
                 Submit Response
               </Button>
-              <Button variant="danger" className="ml-3" onClick={handleDone}>
-                Done
+              <Button variant="danger" className="ml-3" onClick={handleClosingStatement}>
+                Make Closing Statement
               </Button>
             </div>
           </Card.Body>
         </Card>
+      )}
+
+      {isUserDebatingClosing && (
+                <Card className="debate-card right-card mt-3">
+                <Card.Body>
+                  <Card.Title>Please Make Your Closing Statement</Card.Title>
+                  <Form.Control
+                    as="textarea"
+                    value={userResponse}
+                    onChange={(e) => setUserResponse(e.target.value)}
+                    placeholder="Write your response"
+                    rows="3"
+                  />
+                  <div className="button-group-right mt-3">
+                    <Button variant="primary" onClick={handleDone}>
+                      End Debate
+                    </Button>
+                  </div>
+                </Card.Body>
+              </Card>
       )}
 
       {isDebateOver && (
