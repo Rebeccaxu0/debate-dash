@@ -40,7 +40,7 @@ function SavedDebatesSidebar({ showSidebar, toggleSidebar, debateData, selectedD
         {debateData.length > 0 ? (
           <div>
             <ul style={{ listStyleType: 'none', padding: 0, margin: 0 }}>
-              {debateData.map((debate) => (
+              {debateData.slice().reverse().map((debate) => (
                 <OverlayTrigger
                 key={debate.id}
                 placement="top"
