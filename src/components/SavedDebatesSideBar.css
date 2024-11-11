@@ -1,0 +1,58 @@
+.close-icon-button {
+    font-size: 1.6rem;
+    color: #007bff;
+    cursor: pointer;
+    margin-left: auto;
+    transition: color 0.2s ease;
+}
+
+.close-icon-button:hover {
+    color: #0056b3;
+}
+
+.debate-item {
+    margin-bottom: 8px;
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    background-color: #ffffff;
+    transition: background-color 0.2s, box-shadow 0.2s;
+    cursor: pointer;
+}
+
+.debate-item:hover {
+    background-color: #f0f0f0;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.debate-item.selected {
+    background-color: #e0f7fa;
+    border-color: #007bff;
+    box-shadow: 0 4px 10px rgba(0, 123, 255, 0.2);
+}
+
+.debate-date {
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 4px;
+}
+
+.debate-details {
+    margin: 0;
+    font-size: 0.9rem;
+    color: #666;
+}
+
+.no-debates {
+    color: #888;
+    font-style: italic;
+    text-align: center;
+    padding-top: 20px;
+}
+
+.clear-selection-button {
+    display: block;
+    margin: 20px auto 0;
+    font-size: 0.9rem;
+    color: #555;
+}
