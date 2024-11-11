@@ -5,13 +5,14 @@ import { useNavigate } from 'react-router-dom';
 import { LayoutSidebarInset, PencilSquare, PersonCircle, BoxArrowRight } from 'react-bootstrap-icons';
 import './Banner.css';
 
-function Banner({ user, onSignIn, onSignOut, onToggleSidebar }) {
+function Banner({ user, onSignIn, onSignOut, onToggleSidebar, setSelectedDebateId }) {
     // Fetch the user's display name from db
     const [userData, userError] = useDbData(user ? `users/${user.uid}` : '');
 
     const navigate = useNavigate();
 
     const handleNewDebate = () => {
+        setSelectedDebateId(null);
         navigate('/');
     };
 

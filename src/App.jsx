@@ -5,7 +5,7 @@ import Home from './pages/Home';
 import SavedDebatePage from './pages/SavedDebatePage';
 import Banner from './components/Banner';
 import AuthForm from './components/AuthForm';
-import SavedDebatesSidebar from './components/SavedDebatesSidebar';
+import SavedDebatesSidebar from './components/SavedDebatesSideBar';
 import { auth, signOut, onAuthStateChanged, useDbData } from './utilities/firebase';
 
 function App() {
@@ -14,6 +14,7 @@ function App() {
   const [showAuthForm, setShowAuthForm] = useState(false);
   const [showSidebar, setShowSidebar] = useState(false);
   const [debateData, setDebateData] = useState([]);
+  const [selectedDebateId, setSelectedDebateId] = useState(null);
   const [savedDebates, dbError] = useDbData(user ? `debates/${user.uid}` : '');
 
   // Track authentication state changes
@@ -55,6 +56,7 @@ function App() {
         onSignIn={() => setShowAuthForm(true)}
         onSignOut={handleSignOut}
         onToggleSidebar={toggleSidebar}
+        setSelectedDebateId={setSelectedDebateId}
       />
       <Routes>
         <Route path="/" element={<Home user={user} setUser={setUser} />} />
@@ -64,6 +66,8 @@ function App() {
         showSidebar={showSidebar}
         toggleSidebar={toggleSidebar}
         debateData={debateData}
+        selectedDebateId={selectedDebateId}
+        setSelectedDebateId={setSelectedDebateId}
       />
       {showAuthForm && (
         <div className="auth-modal">
