@@ -5,7 +5,7 @@ import Home from './pages/Home';
 import SavedDebatePage from './pages/SavedDebatePage';
 import Banner from './components/Banner';
 import AuthForm from './components/AuthForm';
-import SavedDebatesSidebar from './components/SavedDebatesSideBar';
+import SavedDebatesSideBar from './components/SavedDebatesSideBar';
 import { auth, signOut, onAuthStateChanged, useDbData } from './utilities/firebase';
 
 function App() {
@@ -62,7 +62,7 @@ function App() {
         <Route path="/" element={<Home user={user} setUser={setUser} />} />
         <Route path="/debate/:debateID" element={<SavedDebatePage user={user} />} />
       </Routes>
-      <SavedDebatesSidebar
+      <SavedDebatesSideBar
         showSidebar={showSidebar}
         toggleSidebar={toggleSidebar}
         debateData={debateData}
