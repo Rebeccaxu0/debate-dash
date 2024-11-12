@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { XSquare } from 'react-bootstrap-icons';
 import './SavedDebatesSideBar.css';
 
-function SavedDebatesSidebar({ showSidebar, toggleSidebar, debateData, selectedDebateId, setSelectedDebateId }) {
+function SavedDebatesSideBar({ showSidebar, toggleSidebar, debateData, selectedDebateId, setSelectedDebateId }) {
   const navigate = useNavigate();
 
   const handleDebateClick = (debateId) => {
@@ -70,4 +70,4 @@ function SavedDebatesSidebar({ showSidebar, toggleSidebar, debateData, selectedD
   );
 }
 
-export default SavedDebatesSidebar;
+export default SavedDebatesSideBar;

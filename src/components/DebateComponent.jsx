@@ -6,6 +6,7 @@ import { Container, Card, Button, Form, Row, Col } from "react-bootstrap";
 import { getCandidateResponse } from '../utilities/openaiApi';
 import { getCandidateStance } from '../utilities/searchAPI';
 import './DebateComponent.css';
+import avatar from './avatar.png';
 
 function DebateComponent({ onSaveDebate }) {
   const [candidate1, setCandidate1] = useState("");
@@ -19,6 +20,8 @@ function DebateComponent({ onSaveDebate }) {
   const [isUserDebatingClosing, setIsUserDebatingClosing] = useState(false);
   const [isDebateOver, setIsDebateOver] = useState(false);
   const [isSimulated, setIsSimulated] = useState(false);
+  const [isTextMode, setIsTextMode] = useState(false);
+  const [isMediationEnabled, setIsMediationEnabled] = useState(false);
 
   // Track the end of the debate messages
   const messagesEndRef = useRef(null);
@@ -80,7 +83,7 @@ function DebateComponent({ onSaveDebate }) {
   };
 
 
-  const closingStatements = async(c1History, c2History) => {
+  const closingStatements = async (c1History, c2History) => {
     const prevCandidate2Response = c2History[c2History.length - 1].content;
 
     const userPrompt1 = { role: "user", content: ` ${candidate2} responded with this: "${prevCandidate2Response}". Please make a closing statement ${topic}. Please limit to one paragraph.` };
@@ -206,6 +209,26 @@ function DebateComponent({ onSaveDebate }) {
     onSaveDebate(debateData);
   };
 
+  const getAvatarForSpeaker = (speaker) => {
+    if (speaker === candidate1) {
+      return avatar; // Candidate 1 avatar
+    } else if (speaker === candidate2) {
+      return speaker === "You" ? avatar : avatar; // Candidate 2 avatar
+    } else {
+      return avatar; // Default avatar
+    }
+  };
+
+  const getLatestMessage = (speaker) => {
+    // Find the latest message from the speaker
+    for (let i = debateMessages.length - 1; i >= 0; i--) {
+      if (debateMessages[i].speaker === speaker) {
+        return debateMessages[i].message;
+      }
+    }
+    return "Waiting for response..."; // Placeholder if no message
+  };
+
   return (
     <Container className="App">
       <Row>
@@ -231,19 +254,80 @@ function DebateComponent({ onSaveDebate }) {
         handleTopicChange={(e) => setTopic(e.target.value)}
         disabled={isSimulated}
       />
+
+      {/* Checkbox toggles for Text Mode and Mediate */}
+      <Form.Check
+        type="switch"
+        id="text-mode-switch"
+        label="Text Mode"
+        checked={isTextMode}
+        onChange={() => setIsTextMode(prev => !prev)}
+        className="mt-3"
+      />
+      <Form.Check
+        type="switch"
+        id="mediate-mode-switch"
+        label="Mediate"
+        checked={isMediationEnabled}
+        onChange={() => setIsMediationEnabled(prev => !prev)}
+        className="mt-3"
+      />
+
       <SimulateButton
         onClick={simulateDebate}
         disabled={isSimulateDisabled}
       />
 
-      {debateMessages.map((msg, idx) => (
-        <Card className={msg.speaker === candidate1 ? "debate-card left-card mt-3" : "debate-card right-card mt-3"} key={idx}>
-          <Card.Body>
-            <Card.Title>{msg.speaker}</Card.Title>
-            <Card.Text>{msg.message}</Card.Text>
-          </Card.Body>
-        </Card>
-      ))}
+      {isTextMode ? (
+        debateMessages.map((msg, idx) => (
+          <Card
+            className={
+              msg.speaker === candidate1
+                ? "debate-card left-card mt-3"
+                : "debate-card right-card mt-3"
+            }
+            key={idx}
+          >
+            <Card.Body>
+              <Card.Title>{msg.speaker}</Card.Title>
+              <Card.Text>{msg.message}</Card.Text>
+            </Card.Body>
+          </Card>
+        ))
+      ) : (
+        <div className="animated-mode mt-3">
+          <Row>
+            {/* Speaker 1 */}
+            <Col md={6} className="speaker-col">
+              <div className="speaker-container">
+                <h3>{candidate1}</h3>
+                <img
+                  src={getAvatarForSpeaker(candidate1)}
+                  alt={`${candidate1} Avatar`}
+                  className="speaker-avatar"
+                />
+                <div className="caption left-caption">
+                  {getLatestMessage(candidate1)}
+                </div>
+              </div>
+            </Col>
+            {/* Speaker 2 */}
+            <Col md={6} className="speaker-col">
+              <div className="speaker-container">
+                <h3>{candidate2 === "Yourself" ? "You" : candidate2}</h3>
+                <img
+                  src={getAvatarForSpeaker(candidate2 === "Yourself" ? "You" : candidate2)}
+                  alt={`${candidate2} Avatar`}
+                  className="speaker-avatar"
+                />
+                <div className="caption">
+                  {getLatestMessage(candidate2 === "Yourself" ? "You" : candidate2)}
+                </div>
+              </div>
+            </Col>
+          </Row>
+        </div>
+      )}
 
       {/* Auto scroll when new messages are added only when the user is debating */}
       <div ref={messagesEndRef} />
@@ -272,23 +356,23 @@ function DebateComponent({ onSaveDebate }) {
       )}
 
       {isUserDebatingClosing && (
-                <Card className="debate-card right-card mt-3">
-                <Card.Body>
-                  <Card.Title>Please Make Your Closing Statement</Card.Title>
-                  <Form.Control
-                    as="textarea"
-                    value={userResponse}
-                    onChange={(e) => setUserResponse(e.target.value)}
-                    placeholder="Write your response"
-                    rows="3"
-                  />
-                  <div className="button-group-right mt-3">
-                    <Button variant="primary" onClick={handleDone}>
-                      End Debate
-                    </Button>
-                  </div>
-                </Card.Body>
-              </Card>
+        <Card className="debate-card right-card mt-3">
+          <Card.Body>
+            <Card.Title>Please Make Your Closing Statement</Card.Title>
+            <Form.Control
+              as="textarea"
+              value={userResponse}
+              onChange={(e) => setUserResponse(e.target.value)}
+              placeholder="Write your response"
+              rows="3"
+            />
+            <div className="button-group-right mt-3">
+              <Button variant="primary" onClick={handleDone}>
+                End Debate
+              </Button>
+            </div>
+          </Card.Body>
+        </Card>
       )}
 
       {isDebateOver && (

@@ -26,14 +26,17 @@ function Home({ user, setUser }) {
     updateDb({ [debateID]: debate });
   };
 
-  const handleAuthSuccess = (user) => {
-    setUser(user);
+  const handleAuthSuccess = (newUser) => {
+    setUser(newUser);
     setShowAuthForm(false);
-    if (tempDebate) {
+  };
+
+  useEffect(() => {
+    if (user && tempDebate) {
       saveDebate(tempDebate);
       setTempDebate(null);
     }
-  };
+  }, [user, tempDebate]);
 
   useEffect(() => {
     if (savedDebates) {
