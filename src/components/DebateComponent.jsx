@@ -32,9 +32,11 @@ function DebateComponent({ onSaveDebate }) {
     const loadVoices = () => {
       if (window.speechSynthesis.getVoices().length > 0) {
         setVoicesLoaded(true);
+        console.log("Voices successfully loaded");
       } else {
         window.speechSynthesis.addEventListener('voiceschanged', () => {
           setVoicesLoaded(true);
+          console.log("Voices loaded on voiceschanged event");
         });
       }
     };
@@ -56,13 +58,17 @@ function DebateComponent({ onSaveDebate }) {
   // Update the speakText function to use the waitUntilSpeechEnds function
   const speakText = useCallback(
     async (text, speaker) => {
+      console.log("SpeakText function triggered with text:", text, "and speaker:", speaker);
       if (!voicesLoaded) {
-        console.log("Voices not loaded yet.");
+        console.log("Voices not loaded yet, skipping speakText");
         return;
       }
-      window.speechSynthesis.cancel();
+      window.speechSynthesis.cancel(); // Clear any ongoing speech
+      
       const utterance = new SpeechSynthesisUtterance(text);
       const voices = window.speechSynthesis.getVoices();
+      
+      console.log("Available voices:", voices.map(v => v.name)); // Log all available voices
   
       if (speaker === candidate1) {
         utterance.voice = voices.find(voice => voice.name === "Google US English") || voices[0];
@@ -70,11 +76,16 @@ function DebateComponent({ onSaveDebate }) {
         utterance.voice = voices.find(voice => voice.name === "Google UK English Female") || voices[0];
       }
   
-      window.speechSynthesis.speak(utterance);
-      await waitUntilSpeechEnds();  // Wait until speech is finished
+      console.log("Selected voice:", utterance.voice ? utterance.voice.name : "Default");
+      window.speechSynthesis.speak(utterance); // Trigger TTS
+      console.log("Speech synthesis started"); // Log speech start
+  
+      await waitUntilSpeechEnds();
+      console.log("Speech synthesis ended"); // Log speech end
     },
     [candidate1, voicesLoaded]
   );
+  
 
   // Use effect to trigger TTS for each new debate message
   useEffect(() => {
