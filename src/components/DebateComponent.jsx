@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import CandidateSelector from './CandidateSelector';
 import DebateTopicInput from './DebateTopicInput';
 import SimulateButton from './SimulateButton';
@@ -22,16 +22,68 @@ function DebateComponent({ onSaveDebate }) {
   const [isSimulated, setIsSimulated] = useState(false);
   const [isTextMode, setIsTextMode] = useState(false);
   const [isMediationEnabled, setIsMediationEnabled] = useState(false);
+  const [voicesLoaded, setVoicesLoaded] = useState(false);
 
   // Track the end of the debate messages
   const messagesEndRef = useRef(null);
 
-  // Scroll automatically if the user is debating
+  // TTS function to speak text based on the speaker
   useEffect(() => {
-    if (isUserDebating && messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    const loadVoices = () => {
+      if (window.speechSynthesis.getVoices().length > 0) {
+        setVoicesLoaded(true);
+      } else {
+        window.speechSynthesis.addEventListener('voiceschanged', () => {
+          setVoicesLoaded(true);
+        });
+      }
+    };
+    loadVoices();
+  }, []);
+
+  // Add this wait function below your imports
+  const waitUntilSpeechEnds = () => {
+    return new Promise((resolve) => {
+      const checkIfSpeaking = setInterval(() => {
+        if (!window.speechSynthesis.speaking) {
+          clearInterval(checkIfSpeaking);
+          resolve();
+        }
+      }, 100); // Check every 100ms if speaking has stopped
+    });
+  };
+  
+  // Update the speakText function to use the waitUntilSpeechEnds function
+  const speakText = useCallback(
+    async (text, speaker) => {
+      if (!voicesLoaded) {
+        console.log("Voices not loaded yet.");
+        return;
+      }
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(text);
+      const voices = window.speechSynthesis.getVoices();
+  
+      if (speaker === candidate1) {
+        utterance.voice = voices.find(voice => voice.name === "Google US English") || voices[0];
+      } else {
+        utterance.voice = voices.find(voice => voice.name === "Google UK English Female") || voices[0];
+      }
+  
+      window.speechSynthesis.speak(utterance);
+      await waitUntilSpeechEnds();  // Wait until speech is finished
+    },
+    [candidate1, voicesLoaded]
+  );
+
+  // Use effect to trigger TTS for each new debate message
+  useEffect(() => {
+    if (debateMessages.length > 0) {
+      const latestMessage = debateMessages[debateMessages.length - 1];
+      speakText(latestMessage.message, latestMessage.speaker);
     }
-  }, [debateMessages, isUserDebating]);
+  }, [debateMessages, speakText]);
+  
 
   // Add a condition to enable/disable the button
   const isSimulateDisabled = !candidate1 || !candidate2 || !topic || isSimulated;
@@ -54,6 +106,8 @@ function DebateComponent({ onSaveDebate }) {
     setC1ConversationHistory(c1History);
 
     setDebateMessages(prev => [...prev, { speaker: candidate1, message: candidate1Response }]);
+    speakText(candidate1Response, candidate1); // TTS
+    await waitUntilSpeechEnds();
 
     if (candidate2 === "Yourself") {
       // Update system setting to chat with user.
@@ -75,6 +129,8 @@ function DebateComponent({ onSaveDebate }) {
       setC2ConversationHistory(c2History);
 
       setDebateMessages(prev => [...prev, { speaker: candidate2, message: candidate2Response }]);
+      speakText(candidate2Response, candidate2); // TTS
+      await waitUntilSpeechEnds();
 
       await continueDebate(c1History, c2History, 0);
 
@@ -95,6 +151,8 @@ function DebateComponent({ onSaveDebate }) {
     setC1ConversationHistory(c1History);
 
     setDebateMessages(prev => [...prev, { speaker: candidate1, message: candidate1Response }]);
+    speakText(candidate1Response, candidate1); // TTS
+    await waitUntilSpeechEnds();
 
     const userPrompt2 = { role: "user", content: ` ${candidate1} responded with this: "${candidate1Response}". Please make a closing statement on ${topic}. Please limit to one paragraph.` };
 
@@ -105,6 +163,8 @@ function DebateComponent({ onSaveDebate }) {
     setC2ConversationHistory(c2History);  // Update state
 
     setDebateMessages(prev => [...prev, { speaker: candidate2, message: candidate2Response }]);
+    speakText(candidate2Response, candidate2); // TTS
+    await waitUntilSpeechEnds();
 
     setIsDebateOver(true);
   };
@@ -123,6 +183,8 @@ function DebateComponent({ onSaveDebate }) {
     setC1ConversationHistory(c1History);
 
     setDebateMessages(prev => [...prev, { speaker: candidate1, message: candidate1Response }]);
+    speakText(candidate1Response, candidate1); // TTS
+    await waitUntilSpeechEnds();
 
 
     // Candidate 2 responds to candidate 1
@@ -135,6 +197,8 @@ function DebateComponent({ onSaveDebate }) {
     setC2ConversationHistory(c2History);  // Update state
 
     setDebateMessages(prev => [...prev, { speaker: candidate2, message: candidate2Response }]);
+    speakText(candidate2Response, candidate2); // TTS
+    await waitUntilSpeechEnds();
 
     // Trigger the next cycle
     triggerNextCycle(c1History, c2History, cCount + 1);
@@ -163,6 +227,7 @@ function DebateComponent({ onSaveDebate }) {
 
     setC1ConversationHistory(c1History);
     setDebateMessages(prev => [...prev, { speaker: candidate1, message: candidate1Response }]);
+    speakText(candidate1Response, candidate1); // TTS
 
     setTimeout(() => {
       setIsUserDebating(true);  // Set to true to allow user to respond
