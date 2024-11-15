@@ -9,6 +9,7 @@ import './DebateComponent.css';
 import avatar from './avatar.png';
 
 function DebateComponent({ onSaveDebate }) {
+  const [mediatorInput, setMediatorInput] = useState("");
   const [candidate1, setCandidate1] = useState("");
   const [candidate2, setCandidate2] = useState("");
   const [topic, setTopic] = useState("");
@@ -38,8 +39,6 @@ function DebateComponent({ onSaveDebate }) {
 
 
   const simulateDebate = async () => {
-    // Disable the fields after simulation starts
-    setIsSimulated(true);
 
     // First statement from Candidate 1
     const initialStatement1 = { role: "system", content: `You are ${candidate1}. Imitate everything from personality to speech style. You are debating with ${candidate2}.` };
@@ -76,9 +75,12 @@ function DebateComponent({ onSaveDebate }) {
 
       setDebateMessages(prev => [...prev, { speaker: candidate2, message: candidate2Response }]);
 
-      await continueDebate(c1History, c2History, 0);
+      // Disable the fields after simulation starts
+      setIsSimulated(true);
 
-      closingStatements(c1History, c2History);
+      // await continueDebate(c1History, c2History, 0);
+
+      // closingStatements(c1History, c2History);
     }
   };
 
@@ -137,7 +139,7 @@ function DebateComponent({ onSaveDebate }) {
     setDebateMessages(prev => [...prev, { speaker: candidate2, message: candidate2Response }]);
 
     // Trigger the next cycle
-    triggerNextCycle(c1History, c2History, cCount + 1);
+    // triggerNextCycle(c1History, c2History, cCount + 1);
   };
 
   const triggerNextCycle = (c1History, c2History, cCount) => {
@@ -298,7 +300,7 @@ function DebateComponent({ onSaveDebate }) {
         <div className="animated-mode mt-3">
           <Row>
             {/* Speaker 1 */}
-            <Col md={6} className="speaker-col">
+            <Col md={4} className="speaker-col">
               <div className="speaker-container">
                 <h3>{candidate1}</h3>
                 <img
@@ -311,8 +313,23 @@ function DebateComponent({ onSaveDebate }) {
                 </div>
               </div>
             </Col>
+            {isSimulated && (
+                <Col>
+                <Form.Control
+                  className="mediator-input"
+                  type="text"
+                  placeholder="Add mediator input here..."
+                  value={mediatorInput}
+                  onChange={(e) => setMediatorInput(e.target.value)}
+                />
+                <br></br><br></br>
+                <Button onClick={() => continueDebate(c1ConversationHistory, c2ConversationHistory, 0)}>Respond to Each Other</Button>
+                <br></br><br></br>
+                <Button onClick={() => closingStatements(c1ConversationHistory, c2ConversationHistory)}>Make Closing Statements</Button>
+                </Col>
+            )}
             {/* Speaker 2 */}
-            <Col md={6} className="speaker-col">
+            <Col md={4} className="speaker-col">
               <div className="speaker-container">
                 <h3>{candidate2 === "Yourself" ? "You" : candidate2}</h3>
                 <img
