@@ -1,7 +1,9 @@
 import React, { useState, useEffect, useRef } from "react";
 import CandidateSelector from './CandidateSelector';
 import DebateTopicInput from './DebateTopicInput';
-import SimulateButton from './SimulateButton';
+import TextMode from "./TextMode";
+import UserInputCard from "./UserInputCard";
+import AnimatedMode from "./AnimatedMode";
 import { Container, Card, Button, Form, Row, Col } from "react-bootstrap";
 import { getCandidateResponse } from '../utilities/openaiApi';
 import { getCandidateStance } from '../utilities/searchAPI';
@@ -9,7 +11,6 @@ import './DebateComponent.css';
 import avatar from './avatar.png';
 
 function DebateComponent({ onSaveDebate }) {
-  const [mediatorInput, setMediatorInput] = useState("");
   const [candidate1, setCandidate1] = useState("");
   const [candidate2, setCandidate2] = useState("");
   const [topic, setTopic] = useState("");
@@ -78,7 +79,10 @@ function DebateComponent({ onSaveDebate }) {
       // Disable the fields after simulation starts
       setIsSimulated(true);
 
-      // await continueDebate(c1History, c2History, 0);
+      // Automatically continue the debate if mediation is not enabled
+      if (!isMediationEnabled) {
+        await continueDebate(c1History, c2History, 0);
+      }
 
       // closingStatements(c1History, c2History);
     }
@@ -99,8 +103,8 @@ function DebateComponent({ onSaveDebate }) {
     setDebateMessages(prev => [...prev, { speaker: candidate1, message: candidate1Response }]);
 
     const userPrompt2 = { role: "user", content: ` ${candidate1} responded with this: "${candidate1Response}". Please make a closing statement on ${topic}. Please limit to one paragraph.` };
-
     c2History.push(userPrompt2);
+
     const candidate2Response = await getCandidateResponse(c2History);
 
     c2History.push({ role: "system", content: candidate2Response });
@@ -112,11 +116,17 @@ function DebateComponent({ onSaveDebate }) {
   };
 
 
-  const continueDebate = async (c1History, c2History, cCount) => {
+  const continueDebate = async (c1History, c2History, cCount, mediatorInput = "") => {
     // Candidate 1 responds to candidate 2
     const prevCandidate2Response = c2History[c2History.length - 1].content;
 
-    const userPrompt1 = { role: "user", content: ` ${candidate2} responded with this: "${prevCandidate2Response}". Please respond for the debate. Please limit to one paragraph.` };
+    // console.log("Mediator Input: ", mediatorInput);
+    // Check if mediator input exists
+    const candidatePrompt1 = mediatorInput
+      ? `The mediator asked this question: "${mediatorInput}". Please respond to the mediator's question and ${candidate2}'s response: "${prevCandidate2Response}". Limit to one paragraph.`
+      : ` ${candidate2} responded with this: "${prevCandidate2Response}". Please respond for the debate. Please limit to one paragraph.`;
+
+    const userPrompt1 = { role: "user", content: candidatePrompt1 };
     c1History.push(userPrompt1);
 
     const candidate1Response = await getCandidateResponse(c1History);
@@ -124,13 +134,22 @@ function DebateComponent({ onSaveDebate }) {
     c1History.push({ role: "system", content: candidate1Response });
     setC1ConversationHistory(c1History);
 
-    setDebateMessages(prev => [...prev, { speaker: candidate1, message: candidate1Response }]);
+    setDebateMessages(prev => [
+      ...prev,
+      ...(mediatorInput
+        ? [{ speaker: "Mediator", message: mediatorInput }]
+        : []),
+      { speaker: candidate1, message: candidate1Response }]);
 
 
     // Candidate 2 responds to candidate 1
-    const userPrompt2 = { role: "user", content: ` ${candidate1} responded with this: "${candidate1Response}". Please respond for the debate. Please limit to one paragraph.` };
+    const candidatePrompt2 = mediatorInput
+      ? `The mediator asked this question: "${mediatorInput}". Please respond to the mediator's question and ${candidate1}'s response: "${candidate1Response}". Limit to one paragraph.`
+      : ` ${candidate1} responded with this: "${candidate1Response}". Please respond for the debate. Please limit to one paragraph.`;
 
+    const userPrompt2 = { role: "user", content: candidatePrompt2 };
     c2History.push(userPrompt2);
+
     const candidate2Response = await getCandidateResponse(c2History);
 
     c2History.push({ role: "system", content: candidate2Response });
@@ -138,16 +157,20 @@ function DebateComponent({ onSaveDebate }) {
 
     setDebateMessages(prev => [...prev, { speaker: candidate2, message: candidate2Response }]);
 
-    // Trigger the next cycle
-    // triggerNextCycle(c1History, c2History, cCount + 1);
+    // Automatically continue the debate if mediation is not enabled
+    if (!isMediationEnabled) {
+      triggerNextCycle(c1History, c2History, cCount + 1);
+    }
   };
 
   const triggerNextCycle = (c1History, c2History, cCount) => {
-    if (cCount < 1) {
-      setTimeout(() => {
+    setTimeout(() => {
+      if (cCount < 1) {
         continueDebate(c1History, c2History, cCount);
-      }, 1000);
-    }
+      } else {
+        closingStatements(c1History, c2History);
+      }
+    }, 1000);
   };
 
 
@@ -275,128 +298,58 @@ function DebateComponent({ onSaveDebate }) {
         className="mt-3"
       />
 
-      <SimulateButton
-        onClick={simulateDebate}
-        disabled={isSimulateDisabled}
-      />
+      <Button variant="primary" onClick={simulateDebate} className="mt-3" disabled={isSimulateDisabled}>
+        Simulate!
+      </Button>
 
       {isTextMode ? (
-        debateMessages.map((msg, idx) => (
-          <Card
-            className={
-              msg.speaker === candidate1
-                ? "debate-card left-card mt-3"
-                : "debate-card right-card mt-3"
-            }
-            key={idx}
-          >
-            <Card.Body>
-              <Card.Title>{msg.speaker}</Card.Title>
-              <Card.Text>{msg.message}</Card.Text>
-            </Card.Body>
-          </Card>
-        ))
+        <TextMode
+          debateMessages={debateMessages}
+          candidate1={candidate1}
+          candidate2={candidate2}
+        />
       ) : (
-        <div className="animated-mode mt-3">
-          <Row>
-            {/* Speaker 1 */}
-            <Col md={4} className="speaker-col">
-              <div className="speaker-container">
-                <h3>{candidate1}</h3>
-                <img
-                  src={getAvatarForSpeaker(candidate1)}
-                  alt={`${candidate1} Avatar`}
-                  className="speaker-avatar"
-                />
-                <div className="caption left-caption">
-                  {getLatestMessage(candidate1)}
-                </div>
-              </div>
-            </Col>
-            {isSimulated && (
-                <Col>
-                <Form.Control
-                  className="mediator-input"
-                  type="text"
-                  placeholder="Add mediator input here..."
-                  value={mediatorInput}
-                  onChange={(e) => setMediatorInput(e.target.value)}
-                />
-                <br></br><br></br>
-                <Button onClick={() => continueDebate(c1ConversationHistory, c2ConversationHistory, 0)}>Respond to Each Other</Button>
-                <br></br><br></br>
-                <Button onClick={() => closingStatements(c1ConversationHistory, c2ConversationHistory)}>Make Closing Statements</Button>
-                </Col>
-            )}
-            {/* Speaker 2 */}
-            <Col md={4} className="speaker-col">
-              <div className="speaker-container">
-                <h3>{candidate2 === "Yourself" ? "You" : candidate2}</h3>
-                <img
-                  src={getAvatarForSpeaker(candidate2 === "Yourself" ? "You" : candidate2)}
-                  alt={`${candidate2} Avatar`}
-                  className="speaker-avatar"
-                />
-                <div className="caption">
-                  {getLatestMessage(candidate2 === "Yourself" ? "You" : candidate2)}
-                </div>
-              </div>
-            </Col>
-          </Row>
-        </div>
+        <AnimatedMode
+          candidate1={candidate1}
+          candidate2={candidate2}
+          getAvatarForSpeaker={getAvatarForSpeaker}
+          getLatestMessage={getLatestMessage}
+          continueDebate={continueDebate}
+          closingStatements={closingStatements}
+          c1ConversationHistory={c1ConversationHistory}
+          c2ConversationHistory={c2ConversationHistory}
+          isSimulated={isSimulated}
+          isMediationEnabled={isMediationEnabled}
+        />
+
       )}
 
       {/* Auto scroll when new messages are added only when the user is debating */}
       <div ref={messagesEndRef} />
 
-      {isUserDebating && (
-        <Card className="debate-card right-card mt-3">
-          <Card.Body>
-            <Card.Title>Your Turn</Card.Title>
-            <Form.Control
-              as="textarea"
-              value={userResponse}
-              onChange={(e) => setUserResponse(e.target.value)}
-              placeholder="Write your response"
-              rows="3"
-            />
-            <div className="button-group-right mt-3">
-              <Button variant="primary" onClick={handleUserSubmit}>
-                Submit Response
-              </Button>
-              <Button variant="danger" className="ml-3" onClick={handleClosingStatement}>
-                Make Closing Statement
-              </Button>
-            </div>
-          </Card.Body>
-        </Card>
-      )}
-
-      {isUserDebatingClosing && (
-        <Card className="debate-card right-card mt-3">
-          <Card.Body>
-            <Card.Title>Please Make Your Closing Statement</Card.Title>
-            <Form.Control
-              as="textarea"
-              value={userResponse}
-              onChange={(e) => setUserResponse(e.target.value)}
-              placeholder="Write your response"
-              rows="3"
-            />
-            <div className="button-group-right mt-3">
-              <Button variant="primary" onClick={handleDone}>
-                End Debate
-              </Button>
-            </div>
-          </Card.Body>
-        </Card>
+      {/* User Debating*/}
+      {(isUserDebating || isUserDebatingClosing) && (
+        <UserInputCard
+          userResponse={userResponse}
+          setUserResponse={setUserResponse}
+          onSubmitResponse={isUserDebating ? handleUserSubmit : null}
+          onClosingStatement={isUserDebating ? handleClosingStatement : null}
+          onDone={isUserDebatingClosing ? handleDone : null}
+          isClosing={isUserDebatingClosing}
+        />
       )}
 
       {isDebateOver && (
-        <Card className="mt-3">
+        <Card className="mt-3 text-center">
           <Card.Body>
-            <Card.Title>Debate Ended</Card.Title>
+            <Card.Title>Thanks for using Debate Dash!</Card.Title>
             <Button variant="primary" onClick={handleSave}>Save Debate</Button>
+            <Button variant="secondary" className="ml-2" onClick={() => window.location.reload()}>
+              New Debate
+            </Button>
+            <Button variant="info" className="ml-2" onClick={() => setIsTextMode(true)}>
+              See Backlog
+            </Button>
           </Card.Body>
         </Card>
       )}

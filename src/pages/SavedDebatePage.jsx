@@ -27,7 +27,13 @@ function SavedDebatePage({ user }) {
             </p>
             {debate.messages.map((msg, idx) => (
                 <Card
-                    className={msg.speaker === debate.candidate1 ? "debate-card left-card mt-3" : "debate-card right-card mt-3"}
+                    className={
+                        msg.speaker === "Mediator"
+                        ? "debate-card mediator-card mt-3"
+                        : msg.speaker === debate.candidate1
+                        ? "debate-card left-card mt-3"
+                        : "debate-card right-card mt-3"
+                    }
                     key={idx}
                 >
                     <Card.Body>
