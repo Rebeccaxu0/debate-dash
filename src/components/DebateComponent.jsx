@@ -10,6 +10,23 @@ import { getCandidateStance } from '../utilities/searchAPI';
 import './DebateComponent.css';
 import avatar from './avatar.png';
 
+const candidateGenderMap = {
+  "Donald Trump": "male",
+  "Kamala Harris": "female",
+  "JD Vance": "male",
+  "Tim Walz": "male",
+  "Joe Biden": "male",
+  "AOC": "female",
+  "Barack Obama": "male",
+  "Bernie Sanders": "male",
+  "Nancy Pelosi": "female",
+  "Pete Buttigieg": "male",
+  "Al Gore": "male",
+  "Ted Cruz": "male",
+  "Yourself": "female"  // Adjust as appropriate or prompt user
+};
+
+
 function DebateComponent({ onSaveDebate }) {
   const [candidate1, setCandidate1] = useState("");
   const [candidate2, setCandidate2] = useState("");
@@ -38,8 +55,96 @@ function DebateComponent({ onSaveDebate }) {
   // Add a condition to enable/disable the button
   const isSimulateDisabled = !candidate1 || !candidate2 || !topic || isSimulated;
 
+  const loadVoices = () => {
+    console.log("Loading voices...");
+    return new Promise((resolve) => {
+      let voices = window.speechSynthesis.getVoices();
+      if (voices.length > 0) {
+        console.log("Voices loaded immediately:", voices.map(v => v.name));
+        resolve(voices);
+      } else {
+        console.log("Voices not immediately available, waiting for 'voiceschanged' event...");
+        const voicesChangedHandler = () => {
+          voices = window.speechSynthesis.getVoices();
+          console.log("Voices loaded after event:", voices.map(v => v.name));
+          resolve(voices);
+          window.speechSynthesis.removeEventListener('voiceschanged', voicesChangedHandler);
+        };
+        window.speechSynthesis.addEventListener('voiceschanged', voicesChangedHandler);
+      }
+    });
+  };
+  
+  const speakText = async (text, speaker) => {
+    console.log(`Preparing to speak: "${text}" by speaker: "${speaker}"`);
+  
+    const voices = await loadVoices(); // Ensure voices are loaded
+    if (!voices || voices.length === 0) {
+      console.error("No voices available for speech synthesis.");
+      return;
+    }
+    const speakerGender = candidateGenderMap[speaker];
+    console.log(`Speaker: ${speaker}, Gender: ${speakerGender}`);
+    console.log("Available voices:", voices.map((v) => v.name));
+  
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(text);
+
+    utterance.rate = 1.5; 
+  
+    // Assign voices based on gender and candidate position
+    if (speakerGender === "male") {
+      //if (speaker === candidate1) {
+        utterance.voice = voices.find((voice) => voice.name === "Microsoft David - English (United States)") || voices[0];
+      //} else if (speaker === candidate2) {
+       // utterance.voice = voices.find((voice) => voice.name === "Google UK English Male") || voices[0];
+      //}
+    } else if (speakerGender === "female") {
+      //if (speaker === candidate1) {
+        utterance.voice = voices.find((voice) => voice.name === "Microsoft Zira - English (United States)") || voices[0];
+      //} else if (speaker === candidate2) {
+      //  utterance.voice = voices.find((voice) => voice.name === "Google UK English Female") || voices[0];
+      //}
+    }
+  
+    // Log the selected voice
+    console.log(`Selected voice: "${utterance.voice.name}"`);
+  
+    return new Promise((resolve) => {
+      utterance.onstart = () => {
+        console.log(`Started speaking: "${text}" by "${speaker}"`);
+      };
+  
+      utterance.onend = () => {
+        console.log(`Finished speaking: "${text}" by "${speaker}"`);
+        resolve();
+      };
+  
+      utterance.onerror = (error) => {
+        console.error("Speech synthesis error:", error);
+        resolve();
+      };
+  
+      window.speechSynthesis.speak(utterance);
+      console.log(`Utterance queued for speaking: "${text}" by "${speaker}"`);
+    });
+  };
+  
+  
+  const processSpeechQueueSequentially = async (queue) => {
+    console.log("Processing speech queue:", queue);
+    while (queue.length > 0) {
+      const { text, speaker } = queue.shift();
+      console.log("Processing speech:", { text, speaker });
+      await speakText(text, speaker); // Wait for the current speech to finish
+    }
+    console.log("Finished processing speech queue.");
+  };
+
+
 
   const simulateDebate = async () => {
+    const speechQueue = [];
 
     // First statement from Candidate 1
     const initialStatement1 = { role: "system", content: `You are ${candidate1}. Imitate everything from personality to speech style. You are debating with ${candidate2}.` };
@@ -54,6 +159,8 @@ function DebateComponent({ onSaveDebate }) {
     setC1ConversationHistory(c1History);
 
     setDebateMessages(prev => [...prev, { speaker: candidate1, message: candidate1Response }]);
+    speechQueue.push({ text: candidate1Response, speaker: candidate1 });
+    await processSpeechQueueSequentially(speechQueue);
 
     if (candidate2 === "Yourself") {
       // Update system setting to chat with user.
@@ -75,6 +182,8 @@ function DebateComponent({ onSaveDebate }) {
       setC2ConversationHistory(c2History);
 
       setDebateMessages(prev => [...prev, { speaker: candidate2, message: candidate2Response }]);
+      speechQueue.push({ text: candidate2Response, speaker: candidate2 });
+      await processSpeechQueueSequentially(speechQueue);
 
       // Disable the fields after simulation starts
       setIsSimulated(true);
@@ -90,6 +199,7 @@ function DebateComponent({ onSaveDebate }) {
 
 
   const closingStatements = async (c1History, c2History) => {
+    const speechQueue = [];
     const prevCandidate2Response = c2History[c2History.length - 1].content;
 
     const userPrompt1 = { role: "user", content: ` ${candidate2} responded with this: "${prevCandidate2Response}". Please make a closing statement ${topic}. Please limit to one paragraph.` };
@@ -101,6 +211,8 @@ function DebateComponent({ onSaveDebate }) {
     setC1ConversationHistory(c1History);
 
     setDebateMessages(prev => [...prev, { speaker: candidate1, message: candidate1Response }]);
+    speechQueue.push({ text: candidate1Response, speaker: candidate1 });
+    await processSpeechQueueSequentially(speechQueue);
 
     const userPrompt2 = { role: "user", content: ` ${candidate1} responded with this: "${candidate1Response}". Please make a closing statement on ${topic}. Please limit to one paragraph.` };
     c2History.push(userPrompt2);
@@ -111,12 +223,15 @@ function DebateComponent({ onSaveDebate }) {
     setC2ConversationHistory(c2History);  // Update state
 
     setDebateMessages(prev => [...prev, { speaker: candidate2, message: candidate2Response }]);
+    speechQueue.push({ text: candidate2Response, speaker: candidate2 });
+    await processSpeechQueueSequentially(speechQueue);
 
     setIsDebateOver(true);
   };
 
 
   const continueDebate = async (c1History, c2History, cCount, mediatorInput = "") => {
+    const speechQueue = [];
     // Candidate 1 responds to candidate 2
     const prevCandidate2Response = c2History[c2History.length - 1].content;
 
@@ -140,6 +255,8 @@ function DebateComponent({ onSaveDebate }) {
         ? [{ speaker: "Mediator", message: mediatorInput }]
         : []),
       { speaker: candidate1, message: candidate1Response }]);
+    speechQueue.push({ text: candidate1Response, speaker: candidate1 });
+     await processSpeechQueueSequentially(speechQueue);
 
 
     // Candidate 2 responds to candidate 1
@@ -156,6 +273,8 @@ function DebateComponent({ onSaveDebate }) {
     setC2ConversationHistory(c2History);  // Update state
 
     setDebateMessages(prev => [...prev, { speaker: candidate2, message: candidate2Response }]);
+    speechQueue.push({ text: candidate2Response, speaker: candidate2 });
+    await processSpeechQueueSequentially(speechQueue);
 
     // Automatically continue the debate if mediation is not enabled
     if (!isMediationEnabled) {
