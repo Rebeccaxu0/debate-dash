@@ -41,6 +41,7 @@ function DebateComponent({ onSaveDebate }) {
   const [isSimulated, setIsSimulated] = useState(false);
   const [isTextMode, setIsTextMode] = useState(false);
   const [isMediationEnabled, setIsMediationEnabled] = useState(false);
+  const [isTTSEnabled, setIsTTSEnabled] = useState(false);
 
   // Track the end of the debate messages
   const messagesEndRef = useRef(null);
@@ -159,8 +160,10 @@ function DebateComponent({ onSaveDebate }) {
     setC1ConversationHistory(c1History);
 
     setDebateMessages(prev => [...prev, { speaker: candidate1, message: candidate1Response }]);
-    speechQueue.push({ text: candidate1Response, speaker: candidate1 });
-    await processSpeechQueueSequentially(speechQueue);
+    if (isTTSEnabled) {
+        speechQueue.push({ text: candidate1Response, speaker: candidate1 });
+        await processSpeechQueueSequentially(speechQueue);
+    }
 
     if (candidate2 === "Yourself") {
       // Update system setting to chat with user.
@@ -182,9 +185,10 @@ function DebateComponent({ onSaveDebate }) {
       setC2ConversationHistory(c2History);
 
       setDebateMessages(prev => [...prev, { speaker: candidate2, message: candidate2Response }]);
-      speechQueue.push({ text: candidate2Response, speaker: candidate2 });
-      await processSpeechQueueSequentially(speechQueue);
-
+      if (isTTSEnabled) {
+        speechQueue.push({ text: candidate2Response, speaker: candidate2 });
+        await processSpeechQueueSequentially(speechQueue);
+      }
       // Disable the fields after simulation starts
       setIsSimulated(true);
 
@@ -211,8 +215,10 @@ function DebateComponent({ onSaveDebate }) {
     setC1ConversationHistory(c1History);
 
     setDebateMessages(prev => [...prev, { speaker: candidate1, message: candidate1Response }]);
-    speechQueue.push({ text: candidate1Response, speaker: candidate1 });
-    await processSpeechQueueSequentially(speechQueue);
+    if (isTTSEnabled) {
+      speechQueue.push({ text: candidate1Response, speaker: candidate1 });
+      await processSpeechQueueSequentially(speechQueue);
+    }
 
     const userPrompt2 = { role: "user", content: ` ${candidate1} responded with this: "${candidate1Response}". Please make a closing statement on ${topic}. Please limit to one paragraph.` };
     c2History.push(userPrompt2);
@@ -223,8 +229,10 @@ function DebateComponent({ onSaveDebate }) {
     setC2ConversationHistory(c2History);  // Update state
 
     setDebateMessages(prev => [...prev, { speaker: candidate2, message: candidate2Response }]);
-    speechQueue.push({ text: candidate2Response, speaker: candidate2 });
-    await processSpeechQueueSequentially(speechQueue);
+    if (isTTSEnabled) {
+      speechQueue.push({ text: candidate2Response, speaker: candidate2 });
+      await processSpeechQueueSequentially(speechQueue);
+    }
 
     setIsDebateOver(true);
   };
@@ -255,8 +263,10 @@ function DebateComponent({ onSaveDebate }) {
         ? [{ speaker: "Mediator", message: mediatorInput }]
         : []),
       { speaker: candidate1, message: candidate1Response }]);
-    speechQueue.push({ text: candidate1Response, speaker: candidate1 });
-     await processSpeechQueueSequentially(speechQueue);
+    if (isTTSEnabled) {
+        speechQueue.push({ text: candidate1Response, speaker: candidate1 });
+        await processSpeechQueueSequentially(speechQueue);
+     }
 
 
     // Candidate 2 responds to candidate 1
@@ -273,8 +283,10 @@ function DebateComponent({ onSaveDebate }) {
     setC2ConversationHistory(c2History);  // Update state
 
     setDebateMessages(prev => [...prev, { speaker: candidate2, message: candidate2Response }]);
-    speechQueue.push({ text: candidate2Response, speaker: candidate2 });
-    await processSpeechQueueSequentially(speechQueue);
+    if (isTTSEnabled) {
+      speechQueue.push({ text: candidate2Response, speaker: candidate2 });
+      await processSpeechQueueSequentially(speechQueue);
+    }
 
     // Automatically continue the debate if mediation is not enabled
     if (!isMediationEnabled) {
@@ -414,6 +426,14 @@ function DebateComponent({ onSaveDebate }) {
         label="Mediate"
         checked={isMediationEnabled}
         onChange={() => setIsMediationEnabled(prev => !prev)}
+        className="mt-3"
+      />
+      <Form.Check
+        type="switch"
+        id="tts-mode-switch"
+        label="Listen Mode"
+        checked={isTTSEnabled}
+        onChange={() => setIsTTSEnabled(prev => !prev)}
         className="mt-3"
       />
 
