@@ -18,9 +18,25 @@ textarea {
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   z-index: 1000;
 }
+
 .auth-modal form {
   width: 100%;
 }
+
 .auth-modal h3 {
   margin-bottom: 1rem;
+}
+
+.content-container {
+  margin: 20px auto;
+  padding-top: 10px;
+  padding-bottom: 40px;
+  width: 95%;
+  background: linear-gradient(90deg, #e87f7f, #6099d7);
+  /* background: linear-gradient(90deg, #eba4a4, #88b0dc); */
+  border-radius: 15px;
+  /* box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3); */
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4), 0 4px 10px rgba(0, 0, 0, 0.2);
+  color: white;
+  min-height: 80vh;
 }

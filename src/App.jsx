@@ -58,25 +58,27 @@ function App() {
         onToggleSidebar={toggleSidebar}
         setSelectedDebateId={setSelectedDebateId}
       />
-      <Routes>
-        <Route path="/" element={<Home user={user} setUser={setUser} />} />
-        <Route path="/debate/:debateID" element={<SavedDebatePage user={user} />} />
-      </Routes>
-      <SavedDebatesSideBar
-        showSidebar={showSidebar}
-        toggleSidebar={toggleSidebar}
-        debateData={debateData}
-        selectedDebateId={selectedDebateId}
-        setSelectedDebateId={setSelectedDebateId}
-      />
-      {showAuthForm && (
-        <div className="auth-modal">
-          <AuthForm
-            onAuthSuccess={handleAuthSuccess}
-            onClose={() => setShowAuthForm(false)}
-          />
-        </div>
-      )}
+      <div className="content-container">
+        <Routes>
+          <Route path="/" element={<Home user={user} setUser={setUser} />} />
+          <Route path="/debate/:debateID" element={<SavedDebatePage user={user} />} />
+        </Routes>
+        <SavedDebatesSideBar
+          showSidebar={showSidebar}
+          toggleSidebar={toggleSidebar}
+          debateData={debateData}
+          selectedDebateId={selectedDebateId}
+          setSelectedDebateId={setSelectedDebateId}
+        />
+        {showAuthForm && (
+          <div className="auth-modal">
+            <AuthForm
+              onAuthSuccess={handleAuthSuccess}
+              onClose={() => setShowAuthForm(false)}
+            />
+          </div>
+        )}
+      </div>
     </Router>
   );
 }

@@ -1,0 +1,89 @@
+.debate-topic-container {
+    text-align: center;
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+
+.debate-topic-label {
+    font-family: 'Archivo Black', sans-serif;
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #393939;
+    margin-bottom: 15px;
+}
+
+.debate-topic-form {
+    display: inline-block;
+    text-align: left;
+    width: 100%;
+    max-width: 500px;
+}
+
+.debate-topic-textarea {
+    font-family: 'Arial', sans-serif;
+    font-size: 1.1rem !important;
+    resize: none;
+}
+
+.debate-topic-submit-btn {
+    margin-left: 10px !important;
+    font-size: 1.5rem !important;
+    font-weight: 500 !important;
+    border-radius: 20px !important;
+    padding: 12px 15px !important;
+    background-color: #ff6f61 !important;
+    border: none !important;
+    color: white;
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+  }
+  
+  .debate-topic-submit-btn:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+  }
+  
+  .debate-topic-submit-btn:hover:not(:disabled) {
+    background-color: #e65c50 !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  }
+
+  .debate-topic-display {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start; 
+    margin: 0 auto;
+  }
+  
+  .debate-topic-title {
+    font-family: 'Archivo Black', sans-serif;
+    font-size: 1.6rem;
+    color: #393939;
+    margin: 0;
+    padding-top: 4px;
+    flex-grow: 1;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    hyphens: auto;
+    white-space: normal;
+    text-align: center;
+    overflow: hidden;
+    max-width: 850px;
+  }
+
+.debate-topic-edit-btn {
+    white-space: nowrap;
+    font-size: 1.4rem !important;
+    color: #f9eceb !important;
+    text-decoration: none !important;
+    align-items: center;
+    cursor: pointer;
+    padding-top: 0;
+    
+}
+
+.debate-topic-edit-btn:hover {
+    color: #dfd5d4 !important;
+}
