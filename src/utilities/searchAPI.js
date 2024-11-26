@@ -16,7 +16,7 @@ export const getCandidateStance = async (query) => {
 
     // const targetUrl = response.data.items[0].link;
     const targetUrl = "https://www.bbc.com/news/articles/cwy343z53l1o";
-    const proxyUrl = "http://localhost:3000/";
+    const proxyUrl = "http://localhost:8080/";
 
     const res = await fetch(proxyUrl+targetUrl);
     const html = await res.text();
