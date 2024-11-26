@@ -4,6 +4,7 @@ import { useDbData } from '../utilities/firebase';
 import { useNavigate } from 'react-router-dom';
 import { LayoutSidebarInset, PencilSquare, PersonCircle, BoxArrowRight } from 'react-bootstrap-icons';
 import './Banner.css';
+import logo from '../assets/debate-dash-logo.png';
 
 function Banner({ user, onSignIn, onSignOut, onToggleSidebar, setSelectedDebateId }) {
     // Fetch the user's display name from db
@@ -27,7 +28,9 @@ function Banner({ user, onSignIn, onSignOut, onToggleSidebar, setSelectedDebateI
                     <LayoutSidebarInset onClick={onToggleSidebar} className="icon-button icon-sidebar" title="Saved Debates" />
                     <PencilSquare onClick={handleNewDebate} className="icon-button icon-plus" title="New Debate" />
                 </Nav>
-                <Navbar.Brand className="navbar-brand">Debate Dash</Navbar.Brand>
+                <Navbar.Brand className="navbar-brand">
+                    <img src={logo} alt="Debate Dash Logo" className="navbar-logo" />
+                </Navbar.Brand>
                 <Nav className="navbar-right">
 
                     {user ? (

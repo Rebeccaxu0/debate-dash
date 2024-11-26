@@ -64,24 +64,24 @@
 .speaker-avatar {
     width: 200px;
     height: auto;
-    border-radius: 50%;
-    /* Makes the image circular */
+    /* border-radius: 50%; */
 }
 
 .caption {
     margin-top: 10px;
     font-size: 1em;
-    background-color: #f0f0f0;
+    background-color: #f0f0f0 !important;
     padding: 15px;
     border-radius: 8px;
     min-height: 100px;
     max-width: 90%;
     text-align: center;
+    color: black;
 }
 
 
 .left-caption {
-    background-color: #f0f8ff;
+    background-color: #f0f8ff !important;
 } 
 
 

@@ -7,9 +7,11 @@ import AnimatedMode from "./AnimatedMode";
 import { Container, Card, Button, Form, Row, Col } from "react-bootstrap";
 import { getCandidateResponse } from '../utilities/openaiApi';
 import { getCandidateStance } from '../utilities/searchAPI';
+import { processSpeechQueueSequentially } from '../utilities/textToSpeech';
 import './DebateComponent.css';
-import avatar from './avatar.png';
+import avatar from '../assets/avatar.png';
 
+// TODO: Get an API for this
 const candidateGenderMap = {
   "Donald Trump": "male",
   "Kamala Harris": "female",
@@ -56,94 +58,6 @@ function DebateComponent({ onSaveDebate }) {
   // Add a condition to enable/disable the button
   const isSimulateDisabled = !candidate1 || !candidate2 || !topic || isSimulated;
 
-  const loadVoices = () => {
-    console.log("Loading voices...");
-    return new Promise((resolve) => {
-      let voices = window.speechSynthesis.getVoices();
-      if (voices.length > 0) {
-        console.log("Voices loaded immediately:", voices.map(v => v.name));
-        resolve(voices);
-      } else {
-        console.log("Voices not immediately available, waiting for 'voiceschanged' event...");
-        const voicesChangedHandler = () => {
-          voices = window.speechSynthesis.getVoices();
-          console.log("Voices loaded after event:", voices.map(v => v.name));
-          resolve(voices);
-          window.speechSynthesis.removeEventListener('voiceschanged', voicesChangedHandler);
-        };
-        window.speechSynthesis.addEventListener('voiceschanged', voicesChangedHandler);
-      }
-    });
-  };
-  
-  const speakText = async (text, speaker) => {
-    console.log(`Preparing to speak: "${text}" by speaker: "${speaker}"`);
-  
-    const voices = await loadVoices(); // Ensure voices are loaded
-    if (!voices || voices.length === 0) {
-      console.error("No voices available for speech synthesis.");
-      return;
-    }
-    const speakerGender = candidateGenderMap[speaker];
-    console.log(`Speaker: ${speaker}, Gender: ${speakerGender}`);
-    console.log("Available voices:", voices.map((v) => v.name));
-  
-    window.speechSynthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance(text);
-
-    utterance.rate = 1.5; 
-  
-    // Assign voices based on gender and candidate position
-    if (speakerGender === "male") {
-      //if (speaker === candidate1) {
-        utterance.voice = voices.find((voice) => voice.name === "Microsoft David - English (United States)") || voices[0];
-      //} else if (speaker === candidate2) {
-       // utterance.voice = voices.find((voice) => voice.name === "Google UK English Male") || voices[0];
-      //}
-    } else if (speakerGender === "female") {
-      //if (speaker === candidate1) {
-        utterance.voice = voices.find((voice) => voice.name === "Microsoft Zira - English (United States)") || voices[0];
-      //} else if (speaker === candidate2) {
-      //  utterance.voice = voices.find((voice) => voice.name === "Google UK English Female") || voices[0];
-      //}
-    }
-  
-    // Log the selected voice
-    console.log(`Selected voice: "${utterance.voice.name}"`);
-  
-    return new Promise((resolve) => {
-      utterance.onstart = () => {
-        console.log(`Started speaking: "${text}" by "${speaker}"`);
-      };
-  
-      utterance.onend = () => {
-        console.log(`Finished speaking: "${text}" by "${speaker}"`);
-        resolve();
-      };
-  
-      utterance.onerror = (error) => {
-        console.error("Speech synthesis error:", error);
-        resolve();
-      };
-  
-      window.speechSynthesis.speak(utterance);
-      console.log(`Utterance queued for speaking: "${text}" by "${speaker}"`);
-    });
-  };
-  
-  
-  const processSpeechQueueSequentially = async (queue) => {
-    console.log("Processing speech queue:", queue);
-    while (queue.length > 0) {
-      const { text, speaker } = queue.shift();
-      console.log("Processing speech:", { text, speaker });
-      await speakText(text, speaker); // Wait for the current speech to finish
-    }
-    console.log("Finished processing speech queue.");
-  };
-
-
-
   const simulateDebate = async () => {
     const speechQueue = [];
 
@@ -160,9 +74,13 @@ function DebateComponent({ onSaveDebate }) {
     setC1ConversationHistory(c1History);
 
     setDebateMessages(prev => [...prev, { speaker: candidate1, message: candidate1Response }]);
+
+    // Disable the fields after simulation starts
+    setIsSimulated(true);
+    
     if (isTTSEnabled) {
         speechQueue.push({ text: candidate1Response, speaker: candidate1 });
-        await processSpeechQueueSequentially(speechQueue);
+        await processSpeechQueueSequentially(speechQueue, candidateGenderMap);
     }
 
     if (candidate2 === "Yourself") {
@@ -187,11 +105,9 @@ function DebateComponent({ onSaveDebate }) {
       setDebateMessages(prev => [...prev, { speaker: candidate2, message: candidate2Response }]);
       if (isTTSEnabled) {
         speechQueue.push({ text: candidate2Response, speaker: candidate2 });
-        await processSpeechQueueSequentially(speechQueue);
+        await processSpeechQueueSequentially(speechQueue, candidateGenderMap);
       }
-      // Disable the fields after simulation starts
-      setIsSimulated(true);
-
+      
       // Automatically continue the debate if mediation is not enabled
       if (!isMediationEnabled) {
         await continueDebate(c1History, c2History, 0);
@@ -217,7 +133,7 @@ function DebateComponent({ onSaveDebate }) {
     setDebateMessages(prev => [...prev, { speaker: candidate1, message: candidate1Response }]);
     if (isTTSEnabled) {
       speechQueue.push({ text: candidate1Response, speaker: candidate1 });
-      await processSpeechQueueSequentially(speechQueue);
+      await processSpeechQueueSequentially(speechQueue, candidateGenderMap);
     }
 
     const userPrompt2 = { role: "user", content: ` ${candidate1} responded with this: "${candidate1Response}". Please make a closing statement on ${topic}. Please limit to one paragraph.` };
@@ -231,7 +147,7 @@ function DebateComponent({ onSaveDebate }) {
     setDebateMessages(prev => [...prev, { speaker: candidate2, message: candidate2Response }]);
     if (isTTSEnabled) {
       speechQueue.push({ text: candidate2Response, speaker: candidate2 });
-      await processSpeechQueueSequentially(speechQueue);
+      await processSpeechQueueSequentially(speechQueue, candidateGenderMap);
     }
 
     setIsDebateOver(true);
@@ -265,7 +181,7 @@ function DebateComponent({ onSaveDebate }) {
       { speaker: candidate1, message: candidate1Response }]);
     if (isTTSEnabled) {
         speechQueue.push({ text: candidate1Response, speaker: candidate1 });
-        await processSpeechQueueSequentially(speechQueue);
+        await processSpeechQueueSequentially(speechQueue, candidateGenderMap);
      }
 
 
@@ -285,7 +201,7 @@ function DebateComponent({ onSaveDebate }) {
     setDebateMessages(prev => [...prev, { speaker: candidate2, message: candidate2Response }]);
     if (isTTSEnabled) {
       speechQueue.push({ text: candidate2Response, speaker: candidate2 });
-      await processSpeechQueueSequentially(speechQueue);
+      await processSpeechQueueSequentially(speechQueue, candidateGenderMap);
     }
 
     // Automatically continue the debate if mediation is not enabled
@@ -387,6 +303,12 @@ function DebateComponent({ onSaveDebate }) {
 
   return (
     <Container className="App">
+      <DebateTopicInput
+        topic={topic}
+        handleTopicChange={(e) => setTopic(e.target.value)}
+        disabled={isSimulated}
+        onSubmit={() => console.log("Topic submitted: ", topic)}
+      />
       <Row>
         <Col md={6}>
           <CandidateSelector
@@ -405,11 +327,7 @@ function DebateComponent({ onSaveDebate }) {
           />
         </Col>
       </Row>
-      <DebateTopicInput
-        topic={topic}
-        handleTopicChange={(e) => setTopic(e.target.value)}
-        disabled={isSimulated}
-      />
+
 
       {/* Checkbox toggles for Text Mode and Mediate */}
       <Form.Check

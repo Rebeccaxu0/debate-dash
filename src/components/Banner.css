@@ -7,6 +7,7 @@
 }
 
 .navbar-content {
+    padding-top: 10px;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -28,7 +29,7 @@
 .navbar-brand::after {
     content: '';
     display: block;
-    width: 80px;
+    width: 100px;
     height: 2px;
     background-color: #333;
     margin: 0 auto;
@@ -86,4 +87,11 @@
     font-size: 1.15rem;
     margin-right: 8px;
     color: #454444;
+}
+
+.navbar-logo {
+    height: 55px;
+    width: auto;
+    display: block;
+    margin: 0 auto;
 }
