@@ -23,7 +23,7 @@
 }
 
 .mediator-card {
-    margin: 0 auto; 
+    margin: 0 auto;
     background-color: #fdf3e7 !important;
 }
 
@@ -47,45 +47,77 @@
     }
 }
 
-.animated-mode {
-    margin-top: 20px;
+.candidate-selector-1 {
+    padding-right: 120px;
 }
 
-.speaker-col {
+.candidate-selector-2 {
+    padding-left: 120px;
+}
+
+.loading-spinner {
     text-align: center;
 }
 
-.speaker-container {
+.simulate-btn {
+    display: block;
+    margin: 0 auto;
+    font-size: 1.2rem;
+    padding: 10px 20px;
+    background-color: #837bfb !important;
+    border: none !important;
+}
+
+.simulate-btn:hover {
+    background-color: #6c63ff !important;
+}
+
+/* Toggles */
+.custom-toggle {
     display: flex;
-    flex-direction: column;
     align-items: center;
+    background: linear-gradient(to right, #f8e8e8, #dbe7fa);
+    padding: 8px 16px;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    margin: 1rem auto;
+    justify-content: space-between;
+    width: 50%;
 }
 
-.speaker-avatar {
-    width: 200px;
-    height: auto;
-    /* border-radius: 50%; */
+.custom-toggle-label {
+    margin: 0 8px;
+    font-size: 1rem;
+    font-weight: 500;
+    color: #333;
 }
 
-.caption {
-    margin-top: 10px;
-    font-size: 1em;
-    background-color: #f0f0f0 !important;
-    padding: 15px;
-    border-radius: 8px;
-    min-height: 100px;
-    max-width: 90%;
-    text-align: center;
-    color: black;
+.custom-switch .form-check-input {
+    width: 50px;
+    height: 20px;
+    background-color: #a29bfe;
+    border-radius: 20px;
+    cursor: pointer;
+    position: relative;
+    transition: background-color 0.3s ease;
 }
 
+.custom-switch .form-check-input:checked {
+    background-color: #6c63ff;
+}
 
-.left-caption {
-    background-color: #f0f8ff !important;
-} 
+.custom-switch .form-check-input:before {
+    content: '';
+    position: absolute;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background-color: white;
+    top: 0px;
+    left: -1px;
+    transition: transform 0.3s ease;
+}
 
-
-.mediator-input {
-    width: 100%;
-    height: 100px;
+.custom-switch .form-check-input:checked:before {
+    transform: translateX(15px);
 }

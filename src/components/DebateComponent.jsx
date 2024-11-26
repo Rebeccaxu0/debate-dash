@@ -44,6 +44,7 @@ function DebateComponent({ onSaveDebate }) {
   const [isTextMode, setIsTextMode] = useState(false);
   const [isMediationEnabled, setIsMediationEnabled] = useState(false);
   const [isTTSEnabled, setIsTTSEnabled] = useState(false);
+  const [currentSpeaker, setCurrentSpeaker] = useState("");
 
   // Track the end of the debate messages
   const messagesEndRef = useRef(null);
@@ -77,10 +78,11 @@ function DebateComponent({ onSaveDebate }) {
 
     // Disable the fields after simulation starts
     setIsSimulated(true);
-    
+
     if (isTTSEnabled) {
-        speechQueue.push({ text: candidate1Response, speaker: candidate1 });
-        await processSpeechQueueSequentially(speechQueue, candidateGenderMap);
+      setCurrentSpeaker(candidate1);
+      speechQueue.push({ text: candidate1Response, speaker: candidate1 });
+      await processSpeechQueueSequentially(speechQueue, candidateGenderMap);
     }
 
     if (candidate2 === "Yourself") {
@@ -104,10 +106,11 @@ function DebateComponent({ onSaveDebate }) {
 
       setDebateMessages(prev => [...prev, { speaker: candidate2, message: candidate2Response }]);
       if (isTTSEnabled) {
+        setCurrentSpeaker(candidate2);
         speechQueue.push({ text: candidate2Response, speaker: candidate2 });
         await processSpeechQueueSequentially(speechQueue, candidateGenderMap);
       }
-      
+
       // Automatically continue the debate if mediation is not enabled
       if (!isMediationEnabled) {
         await continueDebate(c1History, c2History, 0);
@@ -132,6 +135,7 @@ function DebateComponent({ onSaveDebate }) {
 
     setDebateMessages(prev => [...prev, { speaker: candidate1, message: candidate1Response }]);
     if (isTTSEnabled) {
+      setCurrentSpeaker(candidate1);
       speechQueue.push({ text: candidate1Response, speaker: candidate1 });
       await processSpeechQueueSequentially(speechQueue, candidateGenderMap);
     }
@@ -146,6 +150,7 @@ function DebateComponent({ onSaveDebate }) {
 
     setDebateMessages(prev => [...prev, { speaker: candidate2, message: candidate2Response }]);
     if (isTTSEnabled) {
+      setCurrentSpeaker(candidate2);
       speechQueue.push({ text: candidate2Response, speaker: candidate2 });
       await processSpeechQueueSequentially(speechQueue, candidateGenderMap);
     }
@@ -180,9 +185,9 @@ function DebateComponent({ onSaveDebate }) {
         : []),
       { speaker: candidate1, message: candidate1Response }]);
     if (isTTSEnabled) {
-        speechQueue.push({ text: candidate1Response, speaker: candidate1 });
-        await processSpeechQueueSequentially(speechQueue, candidateGenderMap);
-     }
+      speechQueue.push({ text: candidate1Response, speaker: candidate1 });
+      await processSpeechQueueSequentially(speechQueue, candidateGenderMap);
+    }
 
 
     // Candidate 2 responds to candidate 1
@@ -309,55 +314,71 @@ function DebateComponent({ onSaveDebate }) {
         disabled={isSimulated}
         onSubmit={() => console.log("Topic submitted: ", topic)}
       />
-      <Row>
+
+      <div className="custom-toggle">
+        <Form.Check
+          type="switch"
+          id="mediate-mode-switch"
+          label={<span className="custom-toggle-label">Mediate</span>}
+          checked={isMediationEnabled}
+          onChange={() => setIsMediationEnabled((prev) => !prev)}
+          className="custom-switch"
+        />
+        <Form.Check
+          type="switch"
+          id="text-mode-switch"
+          label={<span className="custom-toggle-label">Text Mode</span>}
+          checked={isTextMode}
+          onChange={() => setIsTextMode((prev) => !prev)}
+          className="custom-switch"
+        />
+        <Form.Check
+          type="switch"
+          id="tts-mode-switch"
+          label={<span className="custom-toggle-label">Audio</span>}
+          checked={isTTSEnabled}
+          onChange={() => setIsTTSEnabled((prev) => !prev)}
+          className="custom-switch"
+        />
+      </div>
+
+      <Row className="gx-5">
         <Col md={6}>
-          <CandidateSelector
-            label="Select Candidate 1:"
-            candidate={candidate1}
-            handleCandidateChange={(e) => setCandidate1(e.target.value)}
-            disabled={isSimulated}
-          />
+          <div className="candidate-selector-1">
+            <CandidateSelector
+              label="candidate 1"
+              candidate={candidate1}
+              handleCandidateChange={setCandidate1}
+              disabled={isSimulated}
+              position="left"
+              isSpeaking={currentSpeaker === candidate1}
+            />
+          </div>
         </Col>
         <Col md={6}>
-          <CandidateSelector
-            label="Select Candidate 2:"
-            candidate={candidate2}
-            handleCandidateChange={(e) => setCandidate2(e.target.value)} includeSelf={true}
-            disabled={isSimulated}
-          />
+          <div className="candidate-selector-2">
+            <CandidateSelector
+              label="candidate 2"
+              candidate={candidate2}
+              handleCandidateChange={setCandidate2}
+              disabled={isSimulated}
+              position="right"
+              isSpeaking={currentSpeaker === candidate2}
+            />
+          </div>
         </Col>
       </Row>
 
-
-      {/* Checkbox toggles for Text Mode and Mediate */}
-      <Form.Check
-        type="switch"
-        id="text-mode-switch"
-        label="Text Mode"
-        checked={isTextMode}
-        onChange={() => setIsTextMode(prev => !prev)}
-        className="mt-3"
-      />
-      <Form.Check
-        type="switch"
-        id="mediate-mode-switch"
-        label="Mediate"
-        checked={isMediationEnabled}
-        onChange={() => setIsMediationEnabled(prev => !prev)}
-        className="mt-3"
-      />
-      <Form.Check
-        type="switch"
-        id="tts-mode-switch"
-        label="Listen Mode"
-        checked={isTTSEnabled}
-        onChange={() => setIsTTSEnabled(prev => !prev)}
-        className="mt-3"
-      />
-
-      <Button variant="primary" onClick={simulateDebate} className="mt-3" disabled={isSimulateDisabled}>
-        Simulate!
-      </Button>
+      {!isSimulated && (
+        <Button
+          variant="primary"
+          onClick={simulateDebate}
+          className="simulate-btn"
+          disabled={isSimulateDisabled}
+        >
+          Simulate!
+        </Button>
+      )}
 
       {isTextMode ? (
         <TextMode

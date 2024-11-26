@@ -1,0 +1,41 @@
+.animated-mode {
+    margin-top: 20px;
+}
+
+.speaker-col {
+    text-align: center;
+}
+
+.speaker-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.speaker-avatar {
+    width: 200px;
+    height: auto;
+}
+
+.caption {
+    margin-top: 10px;
+    font-size: 1em;
+    background-color: #f0f0f0 !important;
+    padding: 15px;
+    border-radius: 8px;
+    min-height: 100px;
+    max-width: 90%;
+    text-align: left;
+    color: black;
+}
+
+
+.left-caption {
+    background-color: #f0f8ff !important;
+}
+
+
+.mediator-input {
+    width: 100%;
+    height: 100px;
+}
