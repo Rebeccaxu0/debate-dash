@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Row, Col, Button, Form, Card } from "react-bootstrap";
 import "./DebateComponent.css";
+import "./AnimatedMode.css";
 
 const AnimatedMode = ({
     candidate1,
@@ -38,7 +39,7 @@ const AnimatedMode = ({
             <Row>
                 <Col md={4} className="speaker-col">
                     <div className="speaker-container">
-                        <h3>{candidate1}</h3>
+                        {/* <h3>{candidate1}</h3> */}
                         <img
                             src={getAvatarForSpeaker(candidate1)}
                             alt={`${candidate1} Avatar`}
@@ -109,7 +110,7 @@ const AnimatedMode = ({
 
                 <Col md={4} className="speaker-col">
                     <div className="speaker-container">
-                        <h3>{candidate2 === "Yourself" ? "You" : candidate2}</h3>
+                        {/* <h3>{candidate2 === "Yourself" ? "You" : candidate2}</h3> */}
                         <img
                             src={getAvatarForSpeaker(candidate2)}
                             alt={`${candidate2} Avatar`}

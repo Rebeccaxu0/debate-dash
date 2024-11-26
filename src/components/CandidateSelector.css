@@ -1,0 +1,95 @@
+.candidate-selector {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    margin-bottom: 2rem;
+    margin-top: 2rem;
+}
+
+.candidate-input {
+    font-family: 'Arial', sans-serif !important;
+    font-size: 1.1rem !important;
+    border-radius: 8px !important;
+    padding: 4px !important;
+    max-width: 300px !important;
+}
+
+/* Buttons */
+.candidate-submit-btn {
+    margin-left: 10px !important;
+    font-size: 1.2rem !important;
+    font-weight: 500 !important;
+    border-radius: 20px !important;
+    padding: 5px 8px !important;
+    border: none !important;
+    color: white;
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.candidate-submit-btn:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+
+.candidate-submit-btn-left {
+    background-color: #ff6f61 !important;
+}
+
+.candidate-submit-btn-left:hover:not(:disabled) {
+    background-color: #e65c50 !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.candidate-submit-btn-right {
+    background-color: #3d8de2 !important;
+}
+
+.candidate-submit-btn-right:hover:not(:disabled) {
+    background-color: #2f86e3 !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.candidate-name {
+    font-family: 'Archivo Black', sans-serif;
+    font-size: 1.8rem;
+    font-weight: bold;
+    margin: 0;
+    text-align: center;
+}
+
+.candidate-name-left {
+    color: #ea2f1e;
+}
+
+.candidate-name-right {
+    color: #1b75d5;
+}
+
+.candidate-edit-btn {
+    font-size: 1.3rem !important;
+    color: #f9eceb !important;
+    text-decoration: none !important;
+    align-items: center;
+    cursor: pointer;
+    padding-top: 0;
+    padding-bottom: 5px;
+}
+
+.candidate-edit-btn:hover {
+    color: #dfd5d4 !important;
+}
+
+.candidate-audio-icon {
+    margin-left: 5px !important;
+    font-size: 1.7rem !important;
+    color: #f9eceb !important;
+    text-decoration: none !important;
+    align-items: center;
+    cursor: pointer;
+    padding-top: 0;
+    padding-bottom: 5px;
+}
+
+.candidate-audio-icon svg {
+    vertical-align: middle;
+}

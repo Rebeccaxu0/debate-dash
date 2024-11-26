@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Form, Button } from "react-bootstrap";
-import { Pencil, ArrowReturnLeft } from "react-bootstrap-icons";
+import { Pencil } from "react-bootstrap-icons";
 import "./DebateTopicInput.css";
 
 const DebateTopicInput = ({ topic, handleTopicChange, disabled, onSubmit }) => {
@@ -37,7 +37,7 @@ const DebateTopicInput = ({ topic, handleTopicChange, disabled, onSubmit }) => {
             className="debate-topic-submit-btn ml-2"
             disabled={disabled || !topic.trim()}
           >
-            <ArrowReturnLeft />
+            ↵
           </Button>
         </Form>
       ) : (
