@@ -84,6 +84,7 @@ function DebateComponent({ onSaveDebate }) {
       setCurrentSpeaker(candidate1);
       speechQueue.push({ text: candidate1Response, speaker: candidate1 });
       await processSpeechQueueSequentially(speechQueue, candidateGenderMap);
+      setCurrentSpeaker("");
     }
 
     if (candidate2 === "Yourself") {
@@ -110,6 +111,7 @@ function DebateComponent({ onSaveDebate }) {
         setCurrentSpeaker(candidate2);
         speechQueue.push({ text: candidate2Response, speaker: candidate2 });
         await processSpeechQueueSequentially(speechQueue, candidateGenderMap);
+        setCurrentSpeaker("");
       }
 
       // Automatically continue the debate if mediation is not enabled
@@ -139,6 +141,7 @@ function DebateComponent({ onSaveDebate }) {
       setCurrentSpeaker(candidate1);
       speechQueue.push({ text: candidate1Response, speaker: candidate1 });
       await processSpeechQueueSequentially(speechQueue, candidateGenderMap);
+      setCurrentSpeaker("");
     }
 
     const userPrompt2 = { role: "user", content: ` ${candidate1} responded with this: "${candidate1Response}". Please make a closing statement on ${topic}. Please limit to one paragraph.` };
@@ -154,6 +157,7 @@ function DebateComponent({ onSaveDebate }) {
       setCurrentSpeaker(candidate2);
       speechQueue.push({ text: candidate2Response, speaker: candidate2 });
       await processSpeechQueueSequentially(speechQueue, candidateGenderMap);
+      setCurrentSpeaker("");
     }
 
     setIsDebateOver(true);
@@ -186,8 +190,10 @@ function DebateComponent({ onSaveDebate }) {
         : []),
       { speaker: candidate1, message: candidate1Response }]);
     if (isTTSEnabled) {
+      setCurrentSpeaker(candidate1);
       speechQueue.push({ text: candidate1Response, speaker: candidate1 });
       await processSpeechQueueSequentially(speechQueue, candidateGenderMap);
+      setCurrentSpeaker("");
     }
 
 
@@ -206,8 +212,10 @@ function DebateComponent({ onSaveDebate }) {
 
     setDebateMessages(prev => [...prev, { speaker: candidate2, message: candidate2Response }]);
     if (isTTSEnabled) {
+      setCurrentSpeaker(candidate2);
       speechQueue.push({ text: candidate2Response, speaker: candidate2 });
       await processSpeechQueueSequentially(speechQueue, candidateGenderMap);
+      setCurrentSpeaker("");
     }
 
     // Automatically continue the debate if mediation is not enabled
@@ -230,6 +238,7 @@ function DebateComponent({ onSaveDebate }) {
   const handleUserSubmit = async () => {
     const userInput = { role: "user", content: userResponse };
     const c1History = [...c1ConversationHistory, userInput];
+    const speechQueue = [];
 
     setDebateMessages(prev => [...prev, { speaker: "You", message: userResponse }]);
     setUserResponse("");
@@ -241,6 +250,12 @@ function DebateComponent({ onSaveDebate }) {
 
     setC1ConversationHistory(c1History);
     setDebateMessages(prev => [...prev, { speaker: candidate1, message: candidate1Response }]);
+    if (isTTSEnabled) {
+      setCurrentSpeaker(candidate1);
+      speechQueue.push({ text: candidate1Response, speaker: candidate1 });
+      await processSpeechQueueSequentially(speechQueue, candidateGenderMap);
+      setCurrentSpeaker("");
+    }
 
     setTimeout(() => {
       setIsUserDebating(true);  // Set to true to allow user to respond
@@ -249,6 +264,7 @@ function DebateComponent({ onSaveDebate }) {
 
 
   const handleClosingStatement = async () => {
+    const speechQueue = [];
     const userInput = { role: "user", content: userResponse };
     const c1History = [...c1ConversationHistory, userInput];
     setDebateMessages(prev => [...prev, { speaker: "You", message: userResponse }]);
@@ -263,6 +279,13 @@ function DebateComponent({ onSaveDebate }) {
 
     setC1ConversationHistory(c1History);
     setDebateMessages(prev => [...prev, { speaker: candidate1, message: candidate1Response }]);
+    if (isTTSEnabled) {
+      setCurrentSpeaker(candidate1);
+      speechQueue.push({ text: candidate1Response, speaker: candidate1 });
+      await processSpeechQueueSequentially(speechQueue, candidateGenderMap);
+      setCurrentSpeaker("");
+    }
+
     setUserResponse("");
 
     setTimeout(() => {
@@ -311,23 +334,29 @@ function DebateComponent({ onSaveDebate }) {
 
   return (
     <Container className="App">
-      <div className="debate-mode-toggle mb-4">
-        <Form.Check
-          type="switch"
-          id="debate-mode-switch"
-          label={
-            <span className="debate-mode-label">
-              {isUserDebating ? "Debate With Candidate" : "Simulate Debate"}
-            </span>
-          }
-          checked={isUserDebating}
-          onChange={() => {
-            setIsUserDebating(!isUserDebating);
-            setChangeCandidateToUser(!changeCandidateToUser);
-            setCandidate2(changeCandidateToUser ? "" : "Yourself");
+      <div className="custom-debate-mode-group">
+        <div
+          className={`debate-mode-option ${!isUserDebating ? "active" : ""}`}
+          onClick={() => {
+            setIsUserDebating(false);
+            setChangeCandidateToUser(false);
+            setCandidate2("");
             setIsMediationEnabled(false);
           }}
-        />
+        >
+          Simulate Debate
+        </div>
+        <div
+          className={`debate-mode-option ${isUserDebating ? "active" : ""}`}
+          onClick={() => {
+            setIsUserDebating(true);
+            setChangeCandidateToUser(true);
+            setCandidate2("Yourself");
+            setIsMediationEnabled(false);
+          }}
+        >
+          Debate With Candidate
+        </div>
       </div>
 
       <DebateTopicInput
@@ -340,20 +369,28 @@ function DebateComponent({ onSaveDebate }) {
       <div className="custom-toggle">
         {!isUserDebating && (
           <Form.Check
-          type="switch"
-          id="mediate-mode-switch"
-          label={<span className="custom-toggle-label">Mediate</span>}
-          checked={isMediationEnabled}
-          onChange={() => setIsMediationEnabled((prev) => !prev)}
-          className="custom-switch"
-        />
+            type="switch"
+            id="mediate-mode-switch"
+            label={<span className="custom-toggle-label">Mediate</span>}
+            checked={isMediationEnabled}
+            onChange={() => setIsMediationEnabled((prev) => !prev)}
+            className="custom-switch"
+          />
         )}
         <Form.Check
           type="switch"
           id="text-mode-switch"
           label={<span className="custom-toggle-label">Text Mode</span>}
           checked={isTextMode}
-          onChange={() => setIsTextMode((prev) => !prev)}
+          onChange={() => {
+            setIsTextMode((prev) => {
+              const newTextMode = !prev;
+              if (newTextMode) {
+              setIsMediationEnabled(false);
+              }
+              return newTextMode;
+            });
+          }}
           className="custom-switch"
         />
         <Form.Check
@@ -430,6 +467,7 @@ function DebateComponent({ onSaveDebate }) {
           handleRequestClosing={handleClosingStatement}
           isClosing={isUserDebatingClosing}
           onDone={handleDone}
+          currentSpeaker={currentSpeaker}
         />
 
       )}
@@ -438,7 +476,7 @@ function DebateComponent({ onSaveDebate }) {
       <div ref={messagesEndRef} />
 
       {/* User Debating*/}
-      {(isTextMode && (isUserDebating || isUserDebatingClosing)) && (
+      {(isTextMode && isSimulated && (isUserDebating || isUserDebatingClosing)) && (
         <UserInputCard
           userResponse={userResponse}
           setUserResponse={setUserResponse}

@@ -1,7 +1,6 @@
 import React from 'react';
 import { Button, Navbar, Nav } from 'react-bootstrap';
 import { useDbData } from '../utilities/firebase';
-import { useNavigate } from 'react-router-dom';
 import { LayoutSidebarInset, PencilSquare, PersonCircle, BoxArrowRight } from 'react-bootstrap-icons';
 import './Banner.css';
 import logo from '../assets/debate-dash-logo.png';
@@ -10,11 +9,9 @@ function Banner({ user, onSignIn, onSignOut, onToggleSidebar, setSelectedDebateI
     // Fetch the user's display name from db
     const [userData, userError] = useDbData(user ? `users/${user.uid}` : '');
 
-    const navigate = useNavigate();
-
     const handleNewDebate = () => {
         setSelectedDebateId(null);
-        navigate('/');
+        window.location.reload()
     };
 
     if (userError) {

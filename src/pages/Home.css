@@ -1,6 +1,29 @@
 .content {
     display: flex;
     flex-direction: column;
-    padding-top: 20px;
+    padding-top: 0px;
     width: 100%;
+}
+
+.custom-modal {
+    background: linear-gradient(to right, #f8e8e8, #dbe7fa);
+    border-radius: 15px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    padding: 20px;
+    text-align: center;
+}
+
+.custom-modal-title {
+    font-family: 'Archivo Black', sans-serif;
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #333;
+    margin: 0;
+}
+
+.custom-modal-body {
+    font-family: 'Arial', sans-serif;
+    font-size: 1.2rem;
+    color: #555;
+    margin-top: 10px;
 }
