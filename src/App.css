@@ -38,5 +38,5 @@ textarea {
   /* box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3); */
   box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4), 0 4px 10px rgba(0, 0, 0, 0.2);
   color: white;
-  min-height: 80vh;
+  min-height: 85vh;
 }

@@ -45,6 +45,7 @@ function DebateComponent({ onSaveDebate }) {
   const [isMediationEnabled, setIsMediationEnabled] = useState(false);
   const [isTTSEnabled, setIsTTSEnabled] = useState(false);
   const [currentSpeaker, setCurrentSpeaker] = useState("");
+  const [changeCandidateToUser, setChangeCandidateToUser] = useState(false);
 
   // Track the end of the debate messages
   const messagesEndRef = useRef(null);
@@ -266,12 +267,14 @@ function DebateComponent({ onSaveDebate }) {
 
     setTimeout(() => {
       setIsUserDebatingClosing(true);  // Set to true to allow user to respond
+      setIsUserDebating(true);
     }, 1000);
   };
 
   const handleDone = () => {
     setDebateMessages(prev => [...prev, { speaker: "You", message: userResponse }]);
     setIsUserDebatingClosing(false);
+    setIsUserDebating(false);
     setIsDebateOver(true);
   }
 
@@ -308,6 +311,25 @@ function DebateComponent({ onSaveDebate }) {
 
   return (
     <Container className="App">
+      <div className="debate-mode-toggle mb-4">
+        <Form.Check
+          type="switch"
+          id="debate-mode-switch"
+          label={
+            <span className="debate-mode-label">
+              {isUserDebating ? "Debate With Candidate" : "Simulate Debate"}
+            </span>
+          }
+          checked={isUserDebating}
+          onChange={() => {
+            setIsUserDebating(!isUserDebating);
+            setChangeCandidateToUser(!changeCandidateToUser);
+            setCandidate2(changeCandidateToUser ? "" : "Yourself");
+            setIsMediationEnabled(false);
+          }}
+        />
+      </div>
+
       <DebateTopicInput
         topic={topic}
         handleTopicChange={(e) => setTopic(e.target.value)}
@@ -316,7 +338,8 @@ function DebateComponent({ onSaveDebate }) {
       />
 
       <div className="custom-toggle">
-        <Form.Check
+        {!isUserDebating && (
+          <Form.Check
           type="switch"
           id="mediate-mode-switch"
           label={<span className="custom-toggle-label">Mediate</span>}
@@ -324,6 +347,7 @@ function DebateComponent({ onSaveDebate }) {
           onChange={() => setIsMediationEnabled((prev) => !prev)}
           className="custom-switch"
         />
+        )}
         <Form.Check
           type="switch"
           id="text-mode-switch"
@@ -364,6 +388,7 @@ function DebateComponent({ onSaveDebate }) {
               disabled={isSimulated}
               position="right"
               isSpeaking={currentSpeaker === candidate2}
+              changeCandidateToUser={changeCandidateToUser}
             />
           </div>
         </Col>
@@ -398,6 +423,13 @@ function DebateComponent({ onSaveDebate }) {
           c2ConversationHistory={c2ConversationHistory}
           isSimulated={isSimulated}
           isMediationEnabled={isMediationEnabled}
+          isUserDebating={isUserDebating}
+          userResponse={userResponse}
+          setUserResponse={setUserResponse}
+          handleUserSubmit={handleUserSubmit}
+          handleRequestClosing={handleClosingStatement}
+          isClosing={isUserDebatingClosing}
+          onDone={handleDone}
         />
 
       )}
@@ -406,7 +438,7 @@ function DebateComponent({ onSaveDebate }) {
       <div ref={messagesEndRef} />
 
       {/* User Debating*/}
-      {(isUserDebating || isUserDebatingClosing) && (
+      {(isTextMode && (isUserDebating || isUserDebatingClosing)) && (
         <UserInputCard
           userResponse={userResponse}
           setUserResponse={setUserResponse}
@@ -418,14 +450,14 @@ function DebateComponent({ onSaveDebate }) {
       )}
 
       {isDebateOver && (
-        <Card className="mt-3 text-center">
+        <Card className="mt-3 text-center debate-over-card">
           <Card.Body>
             <Card.Title>Thanks for using Debate Dash!</Card.Title>
             <Button variant="primary" onClick={handleSave}>Save Debate</Button>
-            <Button variant="secondary" className="ml-2" onClick={() => window.location.reload()}>
+            <Button variant="secondary" className="ml-2 debate-over-button" onClick={() => window.location.reload()}>
               New Debate
             </Button>
-            <Button variant="info" className="ml-2" onClick={() => setIsTextMode(true)}>
+            <Button variant="info" className="ml-2 debate-over-button" onClick={() => setIsTextMode(true)}>
               See Backlog
             </Button>
           </Card.Body>

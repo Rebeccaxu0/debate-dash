@@ -16,6 +16,13 @@ const DebateTopicInput = ({ topic, handleTopicChange, disabled, onSubmit }) => {
     setIsEditing(true);
   };
 
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter" && !disabled && topic.trim()) {
+      e.preventDefault();
+      handleFormSubmit(e);
+    }
+  };
+
   return (
     <div className="debate-topic-container">
       <h2 className="debate-topic-label">The Topic is...</h2>
@@ -26,6 +33,7 @@ const DebateTopicInput = ({ topic, handleTopicChange, disabled, onSubmit }) => {
               as="textarea"
               value={topic}
               onChange={handleTopicChange}
+              onKeyDown={handleKeyDown}
               placeholder="Enter the debate topic"
               rows={2}
               disabled={disabled}

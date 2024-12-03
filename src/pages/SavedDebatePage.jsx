@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { useDbData } from '../utilities/firebase';
-import { Container, Card, Button } from 'react-bootstrap';
+import { Container, Card } from 'react-bootstrap';
 
 function SavedDebatePage({ user }) {
     const { debateID } = useParams();
-    const navigate = useNavigate();
     const [debate, setDebate] = useState(null);
     const [debateData, dbError] = useDbData(user ? `debates/${user.uid}/${debateID}` : '');
 
@@ -20,7 +19,6 @@ function SavedDebatePage({ user }) {
 
     return (
         <Container className="App">
-            <Button variant="secondary" onClick={() => navigate('/')}>Back to Home</Button>
             <h2>{debate.topic}</h2>
             <p>
                 Debate between {debate.candidate1} and {debate.candidate2} on {new Date(debate.timestamp).toLocaleString()}
