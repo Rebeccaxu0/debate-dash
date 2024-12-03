@@ -13,8 +13,14 @@
 }
 
 .speaker-avatar {
+    /* width: 200px;
+    height: auto; */
     width: 200px;
-    height: auto;
+    height: 200px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-bottom: 30px;
+    transition: transform 0.3s ease;
 }
 
 .caption {

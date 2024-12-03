@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Row, Col, Button, Form, Card } from "react-bootstrap";
+import { getCandidateHeadshot } from "../utilities/searchAPI";
 import "./DebateComponent.css";
 import "./AnimatedMode.css";
 import { initializeSpeechRecognition } from "../utilities/speechToText";
@@ -30,6 +31,9 @@ const AnimatedMode = ({
     const [isRecording, setIsRecording] = useState(false);
     const [recognition, setRecognition] = useState(null);
 
+    const [candidate1Headshot, setCandidate1Headshot] = useState(null);
+    const [candidate2Headshot, setCandidate2Headshot] = useState(null);
+
     useEffect(() => {
         const recognitionInstance = initializeSpeechRecognition(
             (transcript) => setUserResponse(transcript), // Update response on result
@@ -37,6 +41,21 @@ const AnimatedMode = ({
         );
         setRecognition(recognitionInstance);
     }, [setUserResponse]);
+
+    useEffect(() => {
+        const fetchHeadshots = async () => {
+            if (candidate1) {
+                const headshot1 = await getCandidateHeadshot(candidate1);
+                setCandidate1Headshot(headshot1);
+            }
+            if (candidate2 && candidate2 !== "Yourself") {
+                const headshot2 = await getCandidateHeadshot(candidate2);
+                setCandidate2Headshot(headshot2);
+            }
+        };
+
+        fetchHeadshots();
+    }, [candidate1, candidate2]);
 
     const handleStartRecording = () => {
         if (recognition) {
@@ -76,7 +95,7 @@ const AnimatedMode = ({
                         {candidate1 && (
                             <>
                                 <img
-                                    src={getAvatarForSpeaker(candidate1)}
+                                    src={candidate1Headshot || getAvatarForSpeaker(candidate1)}
                                     alt={`${candidate1} Avatar`}
                                     className={`speaker-avatar ${
                                         currentSpeaker === candidate1 ? "speaker-avatar-speaking" : ""
@@ -227,7 +246,7 @@ const AnimatedMode = ({
                                             {!isUserDebating && (
                                                 <>
                                                     <img
-                                                        src={getAvatarForSpeaker(candidate2)}
+                                                        src={candidate2Headshot || getAvatarForSpeaker(candidate2)}
                                                         alt={`${candidate2} Avatar`}
                                                         className={`speaker-avatar ${
                                                             currentSpeaker === candidate2 ? "speaker-avatar-speaking" : ""

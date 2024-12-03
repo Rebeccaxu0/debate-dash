@@ -32,3 +32,26 @@ export const getCandidateStance = async (query) => {
 
     return text;
 };
+
+export const getCandidateHeadshot = async (candidateName) => {
+    try {
+        const response = await axios.get(
+            `https://www.googleapis.com/customsearch/v1`,
+            {
+                params: {
+                    key: process.env.REACT_APP_SEARCH_API_KEY,
+                    cx: 'b277a2fae221840dc',
+                    q: `${candidateName} headshot`,
+                    searchType: 'image',
+                    num: 1,
+                },
+            }
+        );
+
+        // Return the first image link
+        return response.data.items[0].link;
+    } catch (error) {
+        console.error("Error fetching candidate headshot:", error);
+        return null;
+    }
+};
