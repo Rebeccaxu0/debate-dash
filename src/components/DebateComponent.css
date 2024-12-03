@@ -121,3 +121,18 @@
 .custom-switch .form-check-input:checked:before {
     transform: translateX(15px);
 }
+
+.debate-over-card {
+    display: flex;
+    align-items: center;
+    background: linear-gradient(to right, #f8e8e8, #dbe7fa);
+    padding: 8px 16px;
+    border-radius: 10px;
+    border: none !important; 
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    justify-content: space-between;
+}
+
+.debate-over-button {
+    margin-left: 10px;
+}

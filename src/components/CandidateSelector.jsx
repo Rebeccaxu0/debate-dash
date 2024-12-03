@@ -9,7 +9,8 @@ const CandidateSelector = ({
   label,
   disabled,
   position,
-  isSpeaking
+  isSpeaking,
+  changeCandidateToUser,
 }) => {
   const [isEditing, setIsEditing] = useState(true);
   const [tempCandidate, setTempCandidate] = useState(candidate || "");
@@ -25,6 +26,13 @@ const CandidateSelector = ({
     setIsEditing(true);
   };
 
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter" && !disabled && tempCandidate.trim()) {
+      e.preventDefault();
+      handleSaveCandidate();
+    }
+  };
+
   const buttonClass =
     position === "left" ? "candidate-submit-btn-left" : "candidate-submit-btn-right";
   const candidateStyle =
@@ -32,46 +40,55 @@ const CandidateSelector = ({
 
   return (
     <div className="candidate-selector">
-      {isEditing ? (
-        <div className="d-flex align-items-center justify-content-center">
-          <Form.Control
-            type="text"
-            value={tempCandidate}
-            onChange={(e) => setTempCandidate(e.target.value)}
-            placeholder={`Enter ${label}'s name`}
-            disabled={disabled}
-            className="candidate-input"
-          />
-          <Button
-            type="submit"
-            variant="success"
-            className={`candidate-submit-btn ${buttonClass} ml-2`}
-            disabled={!tempCandidate.trim()}
-            onClick={handleSaveCandidate}
-          >
-            ↵
-          </Button>
-        </div>
+      {changeCandidateToUser ? (
+        <span className={`candidate-name ${candidateStyle}`}>
+          {candidate}
+        </span>
       ) : (
-        <div className="d-flex align-items-center justify-content-center">
-          <span className={`candidate-name ${candidateStyle}`}>
-            {candidate}
-          </span>
-          {!disabled && (
-            <Button
-              variant="link"
-              onClick={handleEditCandidate}
-              className="candidate-edit-btn ml-2"
-            >
-              <Pencil />
-            </Button>
+        <>
+          {isEditing ? (
+            <div className="d-flex align-items-center justify-content-center">
+              <Form.Control
+                type="text"
+                value={tempCandidate}
+                onChange={(e) => setTempCandidate(e.target.value)}
+                onKeyDown={handleKeyDown}
+                placeholder={`Enter ${label}'s name`}
+                disabled={disabled}
+                className="candidate-input"
+              />
+              <Button
+                type="submit"
+                variant="success"
+                className={`candidate-submit-btn ${buttonClass} ml-2`}
+                disabled={!tempCandidate.trim()}
+                onClick={handleSaveCandidate}
+              >
+                ↵
+              </Button>
+            </div>
+          ) : (
+            <div className="d-flex align-items-center justify-content-center">
+              <span className={`candidate-name ${candidateStyle}`}>
+                {candidate}
+              </span>
+              {!disabled && (
+                <Button
+                  variant="link"
+                  onClick={handleEditCandidate}
+                  className="candidate-edit-btn ml-2"
+                >
+                  <Pencil />
+                </Button>
+              )}
+              {isSpeaking && (
+                <span className="candidate-audio-icon ml-2">
+                  <VolumeUp />
+                </span>
+              )}
+            </div>
           )}
-          {isSpeaking && (
-            <span className="candidate-audio-icon ml-2">
-              <VolumeUp />
-            </span>
-          )}
-        </div>
+        </>
       )}
     </div>
   );
