@@ -1,7 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Row, Col, Button, Form, Card } from "react-bootstrap";
 import "./DebateComponent.css";
 import "./AnimatedMode.css";
+import { initializeSpeechRecognition } from "../utilities/speechToText";
 
 const AnimatedMode = ({
     candidate1,
@@ -21,9 +22,35 @@ const AnimatedMode = ({
     handleRequestClosing,
     isClosing,
     onDone,
+    currentSpeaker,
 }) => {
     const [isAskingQuestion, setIsAskingQuestion] = useState(false);
     const [userQuestion, setUserQuestion] = useState("");
+
+    const [isRecording, setIsRecording] = useState(false);
+    const [recognition, setRecognition] = useState(null);
+
+    useEffect(() => {
+        const recognitionInstance = initializeSpeechRecognition(
+            (transcript) => setUserResponse(transcript), // Update response on result
+            () => setIsRecording(false) // Stop recording when recognition ends
+        );
+        setRecognition(recognitionInstance);
+    }, [setUserResponse]);
+
+    const handleStartRecording = () => {
+        if (recognition) {
+            setIsRecording(true);
+            recognition.start();
+        }
+    };
+
+    const handleStopRecording = () => {
+        if (recognition) {
+            setIsRecording(false);
+            recognition.stop();
+        }
+    };
 
     const handleAskQuestion = () => {
         setIsAskingQuestion(true);
@@ -51,7 +78,9 @@ const AnimatedMode = ({
                                 <img
                                     src={getAvatarForSpeaker(candidate1)}
                                     alt={`${candidate1} Avatar`}
-                                    className="speaker-avatar"
+                                    className={`speaker-avatar ${
+                                        currentSpeaker === candidate1 ? "speaker-avatar-speaking" : ""
+                                    }`}
                                 />
                                 <div className="caption left-caption">
                                     {getLatestMessage(candidate1)}
@@ -131,22 +160,44 @@ const AnimatedMode = ({
                     <div className="speaker-container">
                         {candidate2 && (
                             <>
-                                {isUserDebating ? (
-                                    <Card className="debate-card user-input-card">
-                                        <Card.Body>
-                                            <Form.Control
-                                                as="textarea"
-                                                value={userResponse}
-                                                onChange={(e) => setUserResponse(e.target.value)}
-                                                placeholder="Write your response here..."
-                                                rows={3}
-                                                className="user-input-textarea"
-                                            />
-                                            {isSimulated && (
-                                                <div className="button-group-right mt-3">
+                                {
+                                    (isUserDebating && isSimulated) ? (
+                                        <Card className="debate-card user-input-card">
+                                            <Card.Body>
+                                                <Form.Control
+                                                    as="textarea"
+                                                    value={userResponse}
+                                                    onChange={(e) => setUserResponse(e.target.value)}
+                                                    placeholder="Write your response here..."
+                                                    rows={8}
+                                                    className="user-debate-textbox"
+                                                />
+                                                <div className="button-group mt-3">
+                                                    {isRecording ? (
+                                                        <Button
+                                                            variant="danger"
+                                                            onClick={handleStopRecording}
+                                                            title="Stop recording your speech"
+                                                        >
+                                                            <i className="bi bi-mic-mute-fill"></i>
+                                                        </Button>
+                                                    ) : (
+                                                        <Button
+                                                            variant="primary"
+                                                            onClick={handleStartRecording}
+                                                            title="Start recording your speech"
+                                                        >
+                                                            <i className="bi bi-mic-fill"></i>
+                                                        </Button>
+                                                    )}
                                                     {isClosing ? (
-                                                        <Button variant="primary" onClick={onDone} disabled={!userResponse.trim()}>
-                                                            End Debate
+                                                        <Button
+                                                            variant="primary"
+                                                            onClick={onDone}
+                                                            disabled={!userResponse.trim()}
+                                                            title="End the debate"
+                                                        >
+                                                            <i className="bi bi-stop-circle-fill"></i>
                                                         </Button>
                                                     ) : (
                                                         <>
@@ -154,34 +205,41 @@ const AnimatedMode = ({
                                                                 variant="primary"
                                                                 onClick={handleUserSubmit}
                                                                 disabled={!userResponse.trim()}
+                                                                title="Submit your response"
                                                             >
-                                                                Submit
+                                                                <i className="bi bi-send-fill"></i>
                                                             </Button>
                                                             <Button
                                                                 variant="danger"
                                                                 className="ml-3"
                                                                 onClick={handleRequestClosing}
+                                                                title="Request a closing statement"
                                                             >
-                                                                Closing Statement
+                                                                <i className="bi bi-arrow-bar-right"></i>
                                                             </Button>
                                                         </>
                                                     )}
                                                 </div>
+                                            </Card.Body>
+                                        </Card>
+                                    ) : (
+                                        <>
+                                            {!isUserDebating && (
+                                                <>
+                                                    <img
+                                                        src={getAvatarForSpeaker(candidate2)}
+                                                        alt={`${candidate2} Avatar`}
+                                                        className={`speaker-avatar ${
+                                                            currentSpeaker === candidate2 ? "speaker-avatar-speaking" : ""
+                                                        }`}
+                                                    />
+                                                    <div className="caption">
+                                                        {getLatestMessage(candidate2 === "Yourself" ? "You" : candidate2)}
+                                                    </div>
+                                                </>
                                             )}
-                                        </Card.Body>
-                                    </Card>
-                                ) : (
-                                    <>
-                                        <img
-                                            src={getAvatarForSpeaker(candidate2)}
-                                            alt={`${candidate2} Avatar`}
-                                            className="speaker-avatar"
-                                        />
-                                        <div className="caption">
-                                            {getLatestMessage(candidate2 === "Yourself" ? "You" : candidate2)}
-                                        </div>
-                                    </>
-                                )}
+                                        </>
+                                    )}
                             </>
                         )}
                     </div>

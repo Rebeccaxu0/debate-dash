@@ -63,19 +63,66 @@
 
 .user-debate-textbox {
     font-family: 'Arial', sans-serif;
-    font-size: 1.1rem;
-    border-radius: 8px;
-    padding: 10px;
+    font-size: 1.2rem;
+    border-radius: 10px;
+    padding: 15px;
     width: 100%;
-    max-width: 300px;
+    max-width: 500px;
     margin: 0 auto;
+    border: 1px solid #ccc;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .button-group {
     display: flex;
     justify-content: center;
+    gap: 15px;
+    margin-top: 20px;
 }
 
 .button-group .btn {
-    margin: 0 5px;
+    font-size: 1.2rem;
+    padding: 10px 20px;
+    border-radius: 10px;
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.button-group .btn:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.button-group .btn-primary {
+    background-color: #6c63ff;
+    border: none;
+}
+
+.button-group .btn-primary:hover {
+    background-color: #837bfb;
+}
+
+.button-group .btn-danger {
+    background-color: #ff6f61;
+    border: none;
+}
+
+.button-group .btn-danger:hover {
+    background-color: #e65c50;
+}
+
+.speaker-avatar-speaking {
+    animation: pulse 1s infinite, glow 1s infinite;
+    border: 3px solid rgba(255, 255, 255, 0.6);
+    border-radius: 50%;
+}
+
+@keyframes glow {
+    0% {
+        box-shadow: 0 0 5px rgba(255, 255, 255, 0.3);
+    }
+    50% {
+        box-shadow: 0 0 15px rgba(255, 255, 255, 0.7);
+    }
+    100% {
+        box-shadow: 0 0 5px rgba(255, 255, 255, 0.3);
+    }
 }

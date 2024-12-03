@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Container } from "react-bootstrap";
+import { Modal, Container } from "react-bootstrap";
 import DebateComponent from '../components/DebateComponent';
 import { useDbUpdate, useDbData } from '../utilities/firebase';
 import AuthForm from "../components/AuthForm";
@@ -11,6 +11,7 @@ function Home({ user, setUser }) {
   const [tempDebate, setTempDebate] = useState(null);
   const [updateDb] = useDbUpdate(user ? `debates/${user.uid}` : null);
   const [savedDebates, dbError] = useDbData(user ? `debates/${user.uid}` : '');
+  const [showModal, setShowModal] = useState(false);
 
   const handleSaveDebate = (debate) => {
     if (!user) {
@@ -24,6 +25,9 @@ function Home({ user, setUser }) {
   const saveDebate = (debate) => {
     const debateID = Date.now();
     updateDb({ [debateID]: debate });
+
+    setShowModal(true);
+    setTimeout(() => setShowModal(false), 2000);
   };
 
   const handleAuthSuccess = (newUser) => {
@@ -56,6 +60,13 @@ function Home({ user, setUser }) {
         {showAuthForm && (
           <AuthForm onAuthSuccess={handleAuthSuccess} onClose={() => setShowAuthForm(false)} />
         )}
+
+        <Modal show={showModal} onHide={() => setShowModal(false)} centered>
+          <div className="custom-modal">
+            <h5 className="custom-modal-title">Debate Saved Successfully!</h5>
+            <p className="custom-modal-body">You can find your saved debate in the backlog.</p>
+          </div>
+        </Modal>
       </div>
     </Container>
   );
