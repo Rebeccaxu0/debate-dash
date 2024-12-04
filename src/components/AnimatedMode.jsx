@@ -24,6 +24,8 @@ const AnimatedMode = ({
     isClosing,
     onDone,
     currentSpeaker,
+    currentChunk,
+    isTTSEnabled,
 }) => {
     const [isAskingQuestion, setIsAskingQuestion] = useState(false);
     const [userQuestion, setUserQuestion] = useState("");
@@ -102,7 +104,8 @@ const AnimatedMode = ({
                                     }`}
                                 />
                                 <div className="caption left-caption">
-                                    {getLatestMessage(candidate1)}
+                                    {/* {getLatestMessage(candidate1)} */}
+                                    {currentSpeaker === candidate1 && isTTSEnabled ? currentChunk : getLatestMessage(candidate1)}
                                 </div>
                             </>
                         )}
@@ -143,7 +146,7 @@ const AnimatedMode = ({
                                 <Card className="mediator-card">
                                     <Card.Body>
                                         <p>
-                                            Would you like to add/ask anything before {candidate1} responds to {candidate2}?
+                                            Would you like to add/ask anything before the candidates respond to each other?
                                         </p>
                                         <div className="button-group-right">
                                             <Button variant="primary" onClick={handleAskQuestion}>
@@ -253,7 +256,7 @@ const AnimatedMode = ({
                                                         }`}
                                                     />
                                                     <div className="caption">
-                                                        {getLatestMessage(candidate2 === "Yourself" ? "You" : candidate2)}
+                                                        {candidate2 === "Yourself" ? getLatestMessage("You") : (currentSpeaker === candidate2 && isTTSEnabled ? currentChunk : getLatestMessage(candidate2))}
                                                     </div>
                                                 </>
                                             )}

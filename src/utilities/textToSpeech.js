@@ -97,12 +97,24 @@ export const speakText = async (text, speaker, genderMap) => {
     });
 };
 
-export const processSpeechQueueSequentially = async (queue, genderMap) => {
+function splitTextIntoChunks(text) {
+    // Split text into sentences or logical chunks
+    return text.match(/[^.!?]+[.!?]*/g) || [text];
+  }  
+
+export const processSpeechQueueSequentially = async (queue, genderMap, onUpdateChunk) => {
     // console.log("Processing speech queue:", queue);
     while (queue.length > 0) {
         const { text, speaker } = queue.shift();
+        const chunks = splitTextIntoChunks(text);
+
+        for (const chunk of chunks) {
+          if (onUpdateChunk) onUpdateChunk(chunk); // Notify UI to display this chunk
+    
+          await speakText(chunk, genderMap[speaker]); // Speak the current chunk
+        }
         // console.log("Processing speech:", { text, speaker });
-        await speakText(text, speaker, genderMap); // Wait for the current speech to finish
+        // await speakText(text, speaker, genderMap); // Wait for the current speech to finish
     }
     // console.log("Finished processing speech queue.");
 };
