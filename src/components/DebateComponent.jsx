@@ -42,10 +42,11 @@ function DebateComponent({ onSaveDebate }) {
   const [isDebateOver, setIsDebateOver] = useState(false);
   const [isSimulated, setIsSimulated] = useState(false);
   const [isTextMode, setIsTextMode] = useState(false);
-  const [isMediationEnabled, setIsMediationEnabled] = useState(false);
+  const [isMediationEnabled, setIsMediationEnabled] = useState(true);
   const [isTTSEnabled, setIsTTSEnabled] = useState(false);
   const [currentSpeaker, setCurrentSpeaker] = useState("");
   const [changeCandidateToUser, setChangeCandidateToUser] = useState(false);
+  const [currentChunk, setCurrentChunk] = useState("");
 
   // Track the end of the debate messages
   const messagesEndRef = useRef(null);
@@ -59,6 +60,10 @@ function DebateComponent({ onSaveDebate }) {
 
   // Add a condition to enable/disable the button
   const isSimulateDisabled = !candidate1 || !candidate2 || !topic || isSimulated;
+
+  const handleSpeechUpdate = (chunk) => {
+    setCurrentChunk(chunk); // Update the chunk being displayed
+  };
 
   const simulateDebate = async () => {
     const speechQueue = [];
@@ -83,7 +88,7 @@ function DebateComponent({ onSaveDebate }) {
     if (isTTSEnabled) {
       setCurrentSpeaker(candidate1);
       speechQueue.push({ text: candidate1Response, speaker: candidate1 });
-      await processSpeechQueueSequentially(speechQueue, candidateGenderMap);
+      await processSpeechQueueSequentially(speechQueue, candidateGenderMap, handleSpeechUpdate);
       setCurrentSpeaker("");
     }
 
@@ -110,7 +115,7 @@ function DebateComponent({ onSaveDebate }) {
       if (isTTSEnabled) {
         setCurrentSpeaker(candidate2);
         speechQueue.push({ text: candidate2Response, speaker: candidate2 });
-        await processSpeechQueueSequentially(speechQueue, candidateGenderMap);
+        await processSpeechQueueSequentially(speechQueue, candidateGenderMap, handleSpeechUpdate);
         setCurrentSpeaker("");
       }
 
@@ -140,7 +145,7 @@ function DebateComponent({ onSaveDebate }) {
     if (isTTSEnabled) {
       setCurrentSpeaker(candidate1);
       speechQueue.push({ text: candidate1Response, speaker: candidate1 });
-      await processSpeechQueueSequentially(speechQueue, candidateGenderMap);
+      await processSpeechQueueSequentially(speechQueue, candidateGenderMap, handleSpeechUpdate);
       setCurrentSpeaker("");
     }
 
@@ -156,7 +161,7 @@ function DebateComponent({ onSaveDebate }) {
     if (isTTSEnabled) {
       setCurrentSpeaker(candidate2);
       speechQueue.push({ text: candidate2Response, speaker: candidate2 });
-      await processSpeechQueueSequentially(speechQueue, candidateGenderMap);
+      await processSpeechQueueSequentially(speechQueue, candidateGenderMap, handleSpeechUpdate);
       setCurrentSpeaker("");
     }
 
@@ -192,7 +197,7 @@ function DebateComponent({ onSaveDebate }) {
     if (isTTSEnabled) {
       setCurrentSpeaker(candidate1);
       speechQueue.push({ text: candidate1Response, speaker: candidate1 });
-      await processSpeechQueueSequentially(speechQueue, candidateGenderMap);
+      await processSpeechQueueSequentially(speechQueue, candidateGenderMap, handleSpeechUpdate);
       setCurrentSpeaker("");
     }
 
@@ -214,7 +219,7 @@ function DebateComponent({ onSaveDebate }) {
     if (isTTSEnabled) {
       setCurrentSpeaker(candidate2);
       speechQueue.push({ text: candidate2Response, speaker: candidate2 });
-      await processSpeechQueueSequentially(speechQueue, candidateGenderMap);
+      await processSpeechQueueSequentially(speechQueue, candidateGenderMap, handleSpeechUpdate);
       setCurrentSpeaker("");
     }
 
@@ -253,7 +258,7 @@ function DebateComponent({ onSaveDebate }) {
     if (isTTSEnabled) {
       setCurrentSpeaker(candidate1);
       speechQueue.push({ text: candidate1Response, speaker: candidate1 });
-      await processSpeechQueueSequentially(speechQueue, candidateGenderMap);
+      await processSpeechQueueSequentially(speechQueue, candidateGenderMap, handleSpeechUpdate);
       setCurrentSpeaker("");
     }
 
@@ -282,7 +287,7 @@ function DebateComponent({ onSaveDebate }) {
     if (isTTSEnabled) {
       setCurrentSpeaker(candidate1);
       speechQueue.push({ text: candidate1Response, speaker: candidate1 });
-      await processSpeechQueueSequentially(speechQueue, candidateGenderMap);
+      await processSpeechQueueSequentially(speechQueue, candidateGenderMap, handleSpeechUpdate);
       setCurrentSpeaker("");
     }
 
@@ -367,7 +372,7 @@ function DebateComponent({ onSaveDebate }) {
       />
 
       <div className="custom-toggle">
-        {!isUserDebating && (
+        {/* {!isUserDebating && (
           <Form.Check
             type="switch"
             id="mediate-mode-switch"
@@ -376,7 +381,7 @@ function DebateComponent({ onSaveDebate }) {
             onChange={() => setIsMediationEnabled((prev) => !prev)}
             className="custom-switch"
           />
-        )}
+        )} */}
         <Form.Check
           type="switch"
           id="text-mode-switch"
@@ -468,6 +473,8 @@ function DebateComponent({ onSaveDebate }) {
           isClosing={isUserDebatingClosing}
           onDone={handleDone}
           currentSpeaker={currentSpeaker}
+          currentChunk={currentChunk}
+          isTTSEnabled={isTTSEnabled}
         />
 
       )}
