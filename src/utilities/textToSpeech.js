@@ -66,7 +66,7 @@ export const speakText = async (text, speaker, genderMap) => {
     window.speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(text);
 
-    utterance.rate = 1.5;
+    utterance.rate = 1.2;
 
     // Assign voices based on gender
     utterance.voice = 

@@ -32,20 +32,20 @@
 }
 
 .candidate-submit-btn-left {
-    background-color: #ff6f61 !important;
+    background-color: #837bfb !important;
 }
 
 .candidate-submit-btn-left:hover:not(:disabled) {
-    background-color: #e65c50 !important;
+    background-color: #6c63ff !important;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 .candidate-submit-btn-right {
-    background-color: #3d8de2 !important;
+    background-color: #837bfb !important;
 }
 
 .candidate-submit-btn-right:hover:not(:disabled) {
-    background-color: #2f86e3 !important;
+    background-color: #6c63ff !important;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
@@ -58,11 +58,11 @@
 }
 
 .candidate-name-left {
-    color: #ea2f1e;
+    color: #272626;
 }
 
 .candidate-name-right {
-    color: #1b75d5;
+    color: #272626;
 }
 
 .candidate-edit-btn {
