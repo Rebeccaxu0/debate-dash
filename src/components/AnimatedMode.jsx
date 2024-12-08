@@ -35,7 +35,8 @@ const AnimatedMode = ({
 
     const [candidate1Headshot, setCandidate1Headshot] = useState(null);
     const [candidate2Headshot, setCandidate2Headshot] = useState(null);
-    const [c2LastMessage, setC2LastMessage] = useState("");
+    const [showC1, setShowC1] = useState(true);
+    const [showC2, setShowC2] = useState(false);
 
     useEffect(() => {
         const recognitionInstance = initializeSpeechRecognition(
@@ -79,19 +80,30 @@ const AnimatedMode = ({
     };
 
     const handleC2LastMessage = () => {
-        setC2LastMessage(getLatestMessage(candidate2));
+        setShowC1(false);
+        setShowC2(true);
     }
 
-    const handleSubmitQuestion = () => {
+    const handleSubmitQuestion = async () => {
         // console.log("User Question: ", userQuestion);
-        continueDebate(c1ConversationHistory, c2ConversationHistory, 0, userQuestion);
+        await continueDebate(c1ConversationHistory, c2ConversationHistory, 0, userQuestion);
         setUserQuestion("");
         setIsAskingQuestion(false);
+        setShowC1(true);
+        setShowC2(false);
     };
 
-    const handleSkipQuestion = () => {
+    const handleSkipQuestion = async () => {
         setIsAskingQuestion(false);
-        continueDebate(c1ConversationHistory, c2ConversationHistory, 0);
+        await continueDebate(c1ConversationHistory, c2ConversationHistory, 0);
+        setShowC1(true);
+        setShowC2(false);
+    };
+
+    const handleClosing = async () => {
+        await closingStatements(c1ConversationHistory, c2ConversationHistory);
+        setShowC1(true);
+        setShowC2(false);
     };
 
     return (
@@ -110,7 +122,7 @@ const AnimatedMode = ({
                                 />
                                 <div className="caption left-caption">
                                     {/* {getLatestMessage(candidate1)} */}
-                                    {currentSpeaker === candidate1 && isTTSEnabled ? currentChunk : getLatestMessage(candidate1)}
+                                    {showC1 ? (currentSpeaker === candidate1 && isTTSEnabled ? currentChunk : getLatestMessage(candidate1)) : ""}
                                 </div>
                             </>
                         )}
@@ -119,12 +131,16 @@ const AnimatedMode = ({
 
                 {isMediationEnabled ? (
                     <Col md={4} className="mediator-col">
-                    <Button 
-                    className="switch-btn"
-                    disabled={!isSimulated || getLatestMessage(candidate2) === c2LastMessage}
-                    onClick={() => handleC2LastMessage()}>Move onto Candidate 2's Answer
-                    </Button>
-                    <br></br><br></br>
+                    {!isTTSEnabled && 
+                        (<>
+                        <Button 
+                        className="switch-btn"
+                        disabled={!isSimulated || showC2}
+                        onClick={() => handleC2LastMessage()}>Move onto Candidate 2's Answer
+                        </Button>
+                        <br></br><br></br>
+                        </>)
+                    }
                         {isSimulated ? (
                             isAskingQuestion ? (
                                 <Card className="mediator-card">
@@ -147,7 +163,7 @@ const AnimatedMode = ({
                                             >
                                                 Skip
                                             </Button>
-                                            <Button variant="danger" onClick={() => closingStatements(c1ConversationHistory, c2ConversationHistory)}>
+                                            <Button variant="danger" onClick={handleClosing}>
                                                 Closing
                                             </Button>
                                         </div>
@@ -170,7 +186,7 @@ const AnimatedMode = ({
                                             >
                                                 No
                                             </Button>
-                                            <Button variant="danger" onClick={() => closingStatements(c1ConversationHistory, c2ConversationHistory)}>
+                                            <Button variant="danger" onClick={handleClosing}>
                                                 Closing
                                             </Button>
                                         </div>
@@ -267,7 +283,10 @@ const AnimatedMode = ({
                                                         }`}
                                                     />
                                                     <div className="caption">
-                                                        {candidate2 === "Yourself" ? getLatestMessage("You") : (currentSpeaker === candidate2 && isTTSEnabled ? currentChunk : c2LastMessage)}
+                                                        {isTTSEnabled ?
+                                                        (candidate2 === "Yourself" ? getLatestMessage("You") : ((currentSpeaker === candidate2 ? currentChunk : getLatestMessage(candidate2))))
+                                                        : (candidate2 === "Yourself" ? getLatestMessage("You") : (showC2 ? getLatestMessage(candidate2) : ""))
+                                                    }
                                                     </div>
                                                 </>
                                             )}
