@@ -6,6 +6,15 @@
     text-align: center;
 }
 
+.switch-btn {
+    display: block;
+    margin: 0 auto;
+    font-size: 1.2rem;
+    padding: 10px 20px;
+    background-color: #453ae1 !important;
+    border: none !important;
+}
+
 .speaker-container {
     display: flex;
     flex-direction: column;

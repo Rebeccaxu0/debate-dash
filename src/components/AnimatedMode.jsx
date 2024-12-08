@@ -35,6 +35,7 @@ const AnimatedMode = ({
 
     const [candidate1Headshot, setCandidate1Headshot] = useState(null);
     const [candidate2Headshot, setCandidate2Headshot] = useState(null);
+    const [c2LastMessage, setC2LastMessage] = useState("");
 
     useEffect(() => {
         const recognitionInstance = initializeSpeechRecognition(
@@ -77,6 +78,10 @@ const AnimatedMode = ({
         setIsAskingQuestion(true);
     };
 
+    const handleC2LastMessage = () => {
+        setC2LastMessage(getLatestMessage(candidate2));
+    }
+
     const handleSubmitQuestion = () => {
         // console.log("User Question: ", userQuestion);
         continueDebate(c1ConversationHistory, c2ConversationHistory, 0, userQuestion);
@@ -114,6 +119,12 @@ const AnimatedMode = ({
 
                 {isMediationEnabled ? (
                     <Col md={4} className="mediator-col">
+                    <Button 
+                    className="switch-btn"
+                    disabled={!isSimulated || getLatestMessage(candidate2) === c2LastMessage}
+                    onClick={() => handleC2LastMessage()}>Move onto Candidate 2's Answer
+                    </Button>
+                    <br></br><br></br>
                         {isSimulated ? (
                             isAskingQuestion ? (
                                 <Card className="mediator-card">
@@ -256,7 +267,7 @@ const AnimatedMode = ({
                                                         }`}
                                                     />
                                                     <div className="caption">
-                                                        {candidate2 === "Yourself" ? getLatestMessage("You") : (currentSpeaker === candidate2 && isTTSEnabled ? currentChunk : getLatestMessage(candidate2))}
+                                                        {candidate2 === "Yourself" ? getLatestMessage("You") : (currentSpeaker === candidate2 && isTTSEnabled ? currentChunk : c2LastMessage)}
                                                     </div>
                                                 </>
                                             )}

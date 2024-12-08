@@ -69,7 +69,7 @@ function DebateComponent({ onSaveDebate }) {
     const speechQueue = [];
 
     // First statement from Candidate 1
-    const initialStatement1 = { role: "system", content: `You are ${candidate1}. Imitate everything from personality to speech style. You are debating with ${candidate2}.` };
+    const initialStatement1 = { role: "system", content: `You are ${candidate1}. Imitate everything from personality to speech style. ${candidate2 === "Yourself" ? "":`You are debating with ${candidate2}.`}`};
     const candidateArticle1 = await getCandidateStance(`${candidate1} policies on ${topic}`);
     // const ragModelInput = {role: ""}`Using the following information: ${candidateArticle}`;
     const userPrompt1 = { role: "user", content: `Using the following information: ${candidateArticle1}. Please give your opening statement on "${topic}". Please limit to one paragraph.` };
@@ -94,9 +94,9 @@ function DebateComponent({ onSaveDebate }) {
 
     if (candidate2 === "Yourself") {
       // Update system setting to chat with user.
-      const userSystemStatement = { role: "system", content: `You are ${candidate1}. Imitate everything from personality to speech style. You are debating with user on "${topic}".` };
-      c1History.push(userSystemStatement);
-      setC1ConversationHistory(c1History);
+      // const userSystemStatement = { role: "system", content: `You are ${candidate1}. Imitate everything from personality to speech style. You are debating with user on "${topic}".` };
+      // c1History.push(userSystemStatement);
+      // setC1ConversationHistory(c1History);
 
       setIsUserDebating(true);
     } else {
@@ -120,9 +120,9 @@ function DebateComponent({ onSaveDebate }) {
       }
 
       // Automatically continue the debate if mediation is not enabled
-      if (!isMediationEnabled) {
-        await continueDebate(c1History, c2History, 0);
-      }
+      // if (!isMediationEnabled) {
+      //   await continueDebate(c1History, c2History, 0);
+      // }
 
       // closingStatements(c1History, c2History);
     }
@@ -169,64 +169,69 @@ function DebateComponent({ onSaveDebate }) {
   };
 
 
-  const continueDebate = async (c1History, c2History, cCount, mediatorInput = "") => {
+  const continueDebate = async (cDebatingHistory, cPrevHistory, currentCandidate, prevCandidate, cCount, mediatorInput = "") => {
     const speechQueue = [];
     // Candidate 1 responds to candidate 2
-    const prevCandidate2Response = c2History[c2History.length - 1].content;
+    const prevCandidateResponse = cPrevHistory[cPrevHistory.length - 1].content;
 
     // console.log("Mediator Input: ", mediatorInput);
     // Check if mediator input exists
-    const candidatePrompt1 = mediatorInput
-      ? `The mediator asked this question: "${mediatorInput}". Please respond to the mediator's question and ${candidate2}'s response: "${prevCandidate2Response}". Limit to one paragraph.`
-      : ` ${candidate2} responded with this: "${prevCandidate2Response}". Please respond for the debate. Please limit to one paragraph.`;
+    const candidatePrompt = mediatorInput
+      ? `The mediator asked this question: "${mediatorInput}". Please respond to the mediator's question and ${prevCandidate}'s response: "${prevCandidateResponse}". Limit to one paragraph.`
+      : ` ${prevCandidate} responded with this: "${prevCandidateResponse}". Please respond for the debate. Please limit to one paragraph.`;
 
-    const userPrompt1 = { role: "user", content: candidatePrompt1 };
-    c1History.push(userPrompt1);
+    const userPrompt = { role: "user", content: candidatePrompt };
+    cDebatingHistory.push(userPrompt);
 
-    const candidate1Response = await getCandidateResponse(c1History);
+    const candidateResponse = await getCandidateResponse(cDebatingHistory);
 
-    c1History.push({ role: "system", content: candidate1Response });
-    setC1ConversationHistory(c1History);
+    cDebatingHistory.push({ role: "system", content: candidateResponse });
+    if (currentCandidate === candidate1) {
+      setC1ConversationHistory(cDebatingHistory);
+    }
+    else {
+      setC2ConversationHistory(cDebatingHistory);
+    }
 
     setDebateMessages(prev => [
       ...prev,
       ...(mediatorInput
         ? [{ speaker: "Mediator", message: mediatorInput }]
         : []),
-      { speaker: candidate1, message: candidate1Response }]);
+      { speaker: currentCandidate, message: candidateResponse }]);
     if (isTTSEnabled) {
-      setCurrentSpeaker(candidate1);
-      speechQueue.push({ text: candidate1Response, speaker: candidate1 });
+      setCurrentSpeaker(currentCandidate);
+      speechQueue.push({ text: candidateResponse, speaker: currentCandidate });
       await processSpeechQueueSequentially(speechQueue, candidateGenderMap, handleSpeechUpdate);
       setCurrentSpeaker("");
     }
 
 
     // Candidate 2 responds to candidate 1
-    const candidatePrompt2 = mediatorInput
-      ? `The mediator asked this question: "${mediatorInput}". Please respond to the mediator's question and ${candidate1}'s response: "${candidate1Response}". Limit to one paragraph.`
-      : ` ${candidate1} responded with this: "${candidate1Response}". Please respond for the debate. Please limit to one paragraph.`;
+    // const candidatePrompt2 = mediatorInput
+    //   ? `The mediator asked this question: "${mediatorInput}". Please respond to the mediator's question and ${candidate1}'s response: "${candidate1Response}". Limit to one paragraph.`
+    //   : ` ${candidate1} responded with this: "${candidate1Response}". Please respond for the debate. Please limit to one paragraph.`;
 
-    const userPrompt2 = { role: "user", content: candidatePrompt2 };
-    c2History.push(userPrompt2);
+    // const userPrompt2 = { role: "user", content: candidatePrompt2 };
+    // c2History.push(userPrompt2);
 
-    const candidate2Response = await getCandidateResponse(c2History);
+    // const candidate2Response = await getCandidateResponse(c2History);
 
-    c2History.push({ role: "system", content: candidate2Response });
-    setC2ConversationHistory(c2History);  // Update state
+    // c2History.push({ role: "system", content: candidate2Response });
+    // setC2ConversationHistory(c2History);  // Update state
 
-    setDebateMessages(prev => [...prev, { speaker: candidate2, message: candidate2Response }]);
-    if (isTTSEnabled) {
-      setCurrentSpeaker(candidate2);
-      speechQueue.push({ text: candidate2Response, speaker: candidate2 });
-      await processSpeechQueueSequentially(speechQueue, candidateGenderMap, handleSpeechUpdate);
-      setCurrentSpeaker("");
-    }
+    // setDebateMessages(prev => [...prev, { speaker: candidate2, message: candidate2Response }]);
+    // if (isTTSEnabled) {
+    //   setCurrentSpeaker(candidate2);
+    //   speechQueue.push({ text: candidate2Response, speaker: candidate2 });
+    //   await processSpeechQueueSequentially(speechQueue, candidateGenderMap, handleSpeechUpdate);
+    //   setCurrentSpeaker("");
+    // }
 
     // Automatically continue the debate if mediation is not enabled
-    if (!isMediationEnabled) {
-      triggerNextCycle(c1History, c2History, cCount + 1);
-    }
+    // if (!isMediationEnabled) {
+    //   triggerNextCycle(c1History, c2History, cCount + 1);
+    // }
   };
 
   const triggerNextCycle = (c1History, c2History, cCount) => {
@@ -441,7 +446,7 @@ function DebateComponent({ onSaveDebate }) {
           variant="primary"
           onClick={simulateDebate}
           className="simulate-btn"
-          disabled={isSimulateDisabled}
+          disabled={!topic || !candidate1 || !candidate2}
         >
           Simulate!
         </Button>
