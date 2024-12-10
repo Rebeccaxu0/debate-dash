@@ -69,7 +69,7 @@ function DebateComponent({ onSaveDebate }) {
     const speechQueue = [];
 
     // First statement from Candidate 1
-    const initialStatement1 = { role: "system", content: `You are ${candidate1}. Imitate everything from personality to speech style. You are debating with ${candidate2}.` };
+    const initialStatement1 = { role: "system", content: `You are ${candidate1}. Imitate everything from personality to speech style. ${candidate2 === "Yourself" ? "":`You are debating with ${candidate2}.`}`};
     const candidateArticle1 = await getCandidateStance(`${candidate1} policies on ${topic}`);
     // const ragModelInput = {role: ""}`Using the following information: ${candidateArticle}`;
     const userPrompt1 = { role: "user", content: `Using the following information: ${candidateArticle1}. Please give your opening statement on "${topic}". Please limit to one paragraph.` };
@@ -94,9 +94,9 @@ function DebateComponent({ onSaveDebate }) {
 
     if (candidate2 === "Yourself") {
       // Update system setting to chat with user.
-      const userSystemStatement = { role: "system", content: `You are ${candidate1}. Imitate everything from personality to speech style. You are debating with user on "${topic}".` };
-      c1History.push(userSystemStatement);
-      setC1ConversationHistory(c1History);
+      // const userSystemStatement = { role: "system", content: `You are ${candidate1}. Imitate everything from personality to speech style. You are debating with user on "${topic}".` };
+      // c1History.push(userSystemStatement);
+      // setC1ConversationHistory(c1History);
 
       setIsUserDebating(true);
     } else {
@@ -120,9 +120,9 @@ function DebateComponent({ onSaveDebate }) {
       }
 
       // Automatically continue the debate if mediation is not enabled
-      if (!isMediationEnabled) {
-        await continueDebate(c1History, c2History, 0);
-      }
+      // if (!isMediationEnabled) {
+      //   await continueDebate(c1History, c2History, 0);
+      // }
 
       // closingStatements(c1History, c2History);
     }
@@ -238,7 +238,6 @@ function DebateComponent({ onSaveDebate }) {
       }
     }, 1000);
   };
-
 
   const handleUserSubmit = async () => {
     const userInput = { role: "user", content: userResponse };
@@ -441,7 +440,7 @@ function DebateComponent({ onSaveDebate }) {
           variant="primary"
           onClick={simulateDebate}
           className="simulate-btn"
-          disabled={isSimulateDisabled}
+          disabled={!topic || !candidate1 || !candidate2}
         >
           Simulate!
         </Button>
